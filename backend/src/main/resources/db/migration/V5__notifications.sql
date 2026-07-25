@@ -23,9 +23,7 @@ CREATE INDEX idx_notifications_user ON notifications(user_id);
 CREATE INDEX idx_notifications_unread ON notifications(user_id, is_read) WHERE is_read = FALSE;
 CREATE INDEX idx_notifications_email_pending ON notifications(email_sent) WHERE email_sent = FALSE;
 
--- ---------------------------------------------------------------------
 -- TABLE: notification_preferences (1:1 with users)
--- ---------------------------------------------------------------------
 CREATE TABLE notification_preferences (
     user_id             BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     email_enabled       BOOLEAN NOT NULL DEFAULT TRUE,
@@ -44,16 +42,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_create_notification_prefs
-    AFTER INSERT ON users
-    FOR EACH ROW EXECUTE FUNCTION create_default_notification_preferences();
+AFTER INSERT ON users
+FOR EACH ROW EXECUTE FUNCTION create_default_notification_preferences();
 
--- ---------------------------------------------------------------------
 -- Auto-generate an in-app notification whenever an application's status
 -- changes (received / shortlisted / rejected / offered / accepted).
 -- Actual email dispatch stays in the Java layer (e.g. a scheduled job
 -- that SELECTs WHERE email_sent = FALSE AND user has email_enabled,
 -- sends via JavaMail/SES/SendGrid, then flips email_sent = TRUE).
--- ---------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION notify_on_application_status_change()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -75,13 +71,11 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_notify_application_status
-    AFTER UPDATE ON applications
-    FOR EACH ROW EXECUTE FUNCTION notify_on_application_status_change();
+AFTER UPDATE ON applications
+FOR EACH ROW EXECUTE FUNCTION notify_on_application_status_change();
 
--- ---------------------------------------------------------------------
 -- Also notify the applicant the moment they submit (status = 'submitted'
 -- on INSERT) so "received" confirmations work too.
--- ---------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION notify_on_application_created()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -103,5 +97,5 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_notify_application_created
-    AFTER INSERT ON applications
-    FOR EACH ROW EXECUTE FUNCTION notify_on_application_created();
+AFTER INSERT ON applications
+FOR EACH ROW EXECUTE FUNCTION notify_on_application_created();

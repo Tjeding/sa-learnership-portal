@@ -5,9 +5,7 @@
 -- Target: PostgreSQL 14+
 -- =====================================================================
 
--- ---------------------------------------------------------------------
 -- EXTENSIONS
--- ---------------------------------------------------------------------
 -- citext: case-insensitive text, used for emails so 'Jane@x.com' and
 --         'jane@x.com' are treated as the same login.
 -- pgcrypto: gives us gen_random_uuid() and crypt()/gen_salt() if you
@@ -15,9 +13,7 @@
 CREATE EXTENSION IF NOT EXISTS citext;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- ---------------------------------------------------------------------
 -- ENUM TYPES
--- ---------------------------------------------------------------------
 CREATE TYPE user_role AS ENUM ('applicant', 'provider', 'admin');
 
 CREATE TYPE provider_type AS ENUM ('employer', 'training_provider', 'both');
@@ -31,8 +27,8 @@ CREATE TYPE opportunity_status AS ENUM (
     'pending_approval',
     'approved',
     'rejected',
-    'closed',           -- past closing date, no longer accepting applications
-    'filled'            -- provider marked all positions filled
+    'closed',            -- past closing date, no longer accepting applications
+    'filled'             -- provider marked all positions filled
 );
 
 CREATE TYPE application_status AS ENUM (
@@ -54,9 +50,7 @@ CREATE TYPE notification_type AS ENUM (
 
 CREATE TYPE proficiency_level AS ENUM ('beginner', 'intermediate', 'advanced', 'expert');
 
--- ---------------------------------------------------------------------
 -- REUSABLE FUNCTION: auto-update "updated_at" columns
--- ---------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -65,11 +59,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- ---------------------------------------------------------------------
 -- TABLE: users
 -- One row per login, regardless of role. Role-specific data lives in
 -- applicant_profiles / provider_profiles (1:1 extension tables).
--- ---------------------------------------------------------------------
 CREATE TABLE users (
     id              BIGSERIAL PRIMARY KEY,
     email           CITEXT UNIQUE NOT NULL,
@@ -87,14 +79,12 @@ CREATE TABLE users (
 );
 
 CREATE TRIGGER trg_users_updated_at
-    BEFORE UPDATE ON users
-    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+BEFORE UPDATE ON users
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE INDEX idx_users_role ON users(role);
 
--- ---------------------------------------------------------------------
 -- TABLE: applicant_profiles (1:1 extension of users where role = applicant)
--- ---------------------------------------------------------------------
 CREATE TABLE applicant_profiles (
     user_id             BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     first_name          TEXT NOT NULL,
@@ -117,23 +107,19 @@ CREATE TABLE applicant_profiles (
 );
 
 CREATE TRIGGER trg_applicant_profiles_updated_at
-    BEFORE UPDATE ON applicant_profiles
-    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+BEFORE UPDATE ON applicant_profiles
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE INDEX idx_applicant_profiles_province ON applicant_profiles(province);
 
--- ---------------------------------------------------------------------
 -- TABLE: sectors (used by both providers and opportunities, and for the
 -- "placement success rate by sector" report)
--- ---------------------------------------------------------------------
 CREATE TABLE sectors (
     id      SERIAL PRIMARY KEY,
     name    TEXT UNIQUE NOT NULL      -- e.g. 'Information Technology', 'Construction', 'Agriculture'
 );
 
--- ---------------------------------------------------------------------
 -- TABLE: provider_profiles (1:1 extension of users where role = provider)
--- ---------------------------------------------------------------------
 CREATE TABLE provider_profiles (
     user_id             BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     organization_name   TEXT NOT NULL,
@@ -155,16 +141,14 @@ CREATE TABLE provider_profiles (
 );
 
 CREATE TRIGGER trg_provider_profiles_updated_at
-    BEFORE UPDATE ON provider_profiles
-    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+BEFORE UPDATE ON provider_profiles
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE INDEX idx_provider_profiles_sector ON provider_profiles(sector_id);
 
--- ---------------------------------------------------------------------
 -- CHECK: enforce that only users with the matching role get a profile row.
 -- (Postgres can't do cross-table CHECK constraints directly, so we use
 -- a trigger.)
--- ---------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION enforce_role_on_applicant_profile()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -176,8 +160,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_check_applicant_role
-    BEFORE INSERT OR UPDATE ON applicant_profiles
-    FOR EACH ROW EXECUTE FUNCTION enforce_role_on_applicant_profile();
+BEFORE INSERT OR UPDATE ON applicant_profiles
+FOR EACH ROW EXECUTE FUNCTION enforce_role_on_applicant_profile();
 
 CREATE OR REPLACE FUNCTION enforce_role_on_provider_profile()
 RETURNS TRIGGER AS $$
@@ -190,5 +174,5 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_check_provider_role
-    BEFORE INSERT OR UPDATE ON provider_profiles
-    FOR EACH ROW EXECUTE FUNCTION enforce_role_on_provider_profile();
+BEFORE INSERT OR UPDATE ON provider_profiles
+FOR EACH ROW EXECUTE FUNCTION enforce_role_on_provider_profile();

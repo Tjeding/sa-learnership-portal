@@ -16,8 +16,8 @@ CREATE TABLE applications (
 );
 
 CREATE TRIGGER trg_applications_updated_at
-    BEFORE UPDATE ON applications
-    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+BEFORE UPDATE ON applications
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE INDEX idx_applications_applicant ON applications(applicant_id);
 CREATE INDEX idx_applications_opportunity ON applications(opportunity_id);
@@ -31,7 +31,7 @@ DECLARE
     opp_closing DATE;
 BEGIN
     SELECT status, closing_date INTO opp_status, opp_closing
-      FROM opportunities WHERE id = NEW.opportunity_id;
+    FROM opportunities WHERE id = NEW.opportunity_id;
 
     IF TG_OP = 'INSERT' THEN
         IF opp_status <> 'approved' THEN
@@ -46,14 +46,12 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_check_opportunity_open
-    BEFORE INSERT ON applications
-    FOR EACH ROW EXECUTE FUNCTION enforce_opportunity_open_for_application();
+BEFORE INSERT ON applications
+FOR EACH ROW EXECUTE FUNCTION enforce_opportunity_open_for_application();
 
--- ---------------------------------------------------------------------
 -- TABLE: application_status_history
 -- Full audit trail of every status change, also the backbone for the
 -- "application volume" and "placement success rate" analytics reports.
--- ---------------------------------------------------------------------
 CREATE TABLE application_status_history (
     id              BIGSERIAL PRIMARY KEY,
     application_id  BIGINT NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
@@ -83,5 +81,5 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_log_application_status
-    AFTER INSERT OR UPDATE ON applications
-    FOR EACH ROW EXECUTE FUNCTION log_application_status_change();
+AFTER INSERT OR UPDATE ON applications
+FOR EACH ROW EXECUTE FUNCTION log_application_status_change();
