@@ -28,8 +28,8 @@ CREATE TABLE opportunities (
 );
 
 CREATE TRIGGER trg_opportunities_updated_at
-    BEFORE UPDATE ON opportunities
-    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+BEFORE UPDATE ON opportunities
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE INDEX idx_opportunities_provider ON opportunities(provider_id);
 CREATE INDEX idx_opportunities_status ON opportunities(status);
@@ -69,9 +69,7 @@ CREATE TABLE opportunity_qualifications (
 CREATE OR REPLACE FUNCTION enforce_provider_owns_opportunity()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM provider_profiles WHERE user_id = NEW.provider_id
-    ) THEN
+    IF NOT EXISTS (SELECT 1 FROM provider_profiles WHERE user_id = NEW.provider_id) THEN
         RAISE EXCEPTION 'user % has no provider profile', NEW.provider_id;
     END IF;
     RETURN NEW;
@@ -79,8 +77,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_check_opportunity_provider
-    BEFORE INSERT OR UPDATE ON opportunities
-    FOR EACH ROW EXECUTE FUNCTION enforce_provider_owns_opportunity();
+BEFORE INSERT OR UPDATE ON opportunities
+FOR EACH ROW EXECUTE FUNCTION enforce_provider_owns_opportunity();
 
 -- Convenience function: automatically flip status from 'approved' to
 -- 'closed' once closing_date has passed. Call this from a scheduled
@@ -91,9 +89,9 @@ DECLARE
     rows_affected INTEGER;
 BEGIN
     UPDATE opportunities
-       SET status = 'closed'
-     WHERE status = 'approved'
-       AND closing_date < CURRENT_DATE;
+    SET status = 'closed'
+    WHERE status = 'approved'
+    AND closing_date < CURRENT_DATE;
     GET DIAGNOSTICS rows_affected = ROW_COUNT;
     RETURN rows_affected;
 END;

@@ -1,7 +1,7 @@
 -- =====================================================================
 -- V2__nqf_reference_data.sql
--- SA Data Integration requirement: NQF levels + registered qualification
--- types, sourced from SAQA (South African Qualifications Authority).
+-- SA National Qualifications Framework (NQF) reference data, applicant
+-- qualifications/skills.
 --
 -- CHOSEN SOURCE (document this in your backlog too):
 --   SAQA - South African Qualifications Authority
@@ -15,11 +15,9 @@
 --   see the admin_qualification_suggestions table for that workflow.
 -- =====================================================================
 
--- ---------------------------------------------------------------------
 -- TABLE: nqf_levels
 -- The 10 official NQF levels (National Qualifications Framework Act
 -- No. 67 of 2008), levels 1-4 sub-framework GFETQSF, 5-10 HEQSF/OQSF.
--- ---------------------------------------------------------------------
 CREATE TABLE nqf_levels (
     id              SMALLINT PRIMARY KEY,   -- 1 through 10
     level_name      TEXT NOT NULL,          -- e.g. 'NQF Level 4'
@@ -28,13 +26,11 @@ CREATE TABLE nqf_levels (
     source_url      TEXT NOT NULL DEFAULT 'https://www.saqa.org.za/level-descriptors-for-the-south-african-national-qualifications-framework/'
 );
 
--- ---------------------------------------------------------------------
 -- TABLE: qualification_types
 -- Registered qualification types linked to an NQF level. Populated from
 -- SAQA's published qualifications list. The Java application should
 -- populate its qualification dropdown by querying this table (never
 -- hardcode qualification names in the frontend/backend).
--- ---------------------------------------------------------------------
 CREATE TABLE qualification_types (
     id                  SERIAL PRIMARY KEY,
     saqa_id             TEXT UNIQUE,             -- SAQA qualification ID, where known/applicable
@@ -48,13 +44,11 @@ CREATE TABLE qualification_types (
 
 CREATE INDEX idx_qualification_types_nqf_level ON qualification_types(nqf_level_id);
 
--- ---------------------------------------------------------------------
 -- TABLE: admin_qualification_suggestions
 -- Lets admins (or providers) propose a new qualification type that isn't
 -- yet in the dropdown; an admin reviews and promotes it into
 -- qualification_types. Keeps the reference data current without needing
 -- a live SAQA API.
--- ---------------------------------------------------------------------
 CREATE TABLE admin_qualification_suggestions (
     id              BIGSERIAL PRIMARY KEY,
     suggested_by    BIGINT NOT NULL REFERENCES users(id),
@@ -67,10 +61,8 @@ CREATE TABLE admin_qualification_suggestions (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- ---------------------------------------------------------------------
 -- TABLE: skills
 -- Skill tags used by both applicant profiles and opportunity listings.
--- ---------------------------------------------------------------------
 CREATE TABLE skills (
     id          SERIAL PRIMARY KEY,
     name        TEXT UNIQUE NOT NULL,
@@ -78,10 +70,8 @@ CREATE TABLE skills (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- ---------------------------------------------------------------------
--- TABLE: applicant_qualifications (M:N applicant <-> qualification_type,
+-- TABLE: applicant_qualifications (M applicant <-> qualification_type,
 -- with extra detail per record)
--- ---------------------------------------------------------------------
 CREATE TABLE applicant_qualifications (
     id                      BIGSERIAL PRIMARY KEY,
     applicant_id            BIGINT NOT NULL REFERENCES applicant_profiles(user_id) ON DELETE CASCADE,
@@ -97,9 +87,7 @@ CREATE TABLE applicant_qualifications (
 CREATE INDEX idx_applicant_qualifications_applicant ON applicant_qualifications(applicant_id);
 CREATE INDEX idx_applicant_qualifications_type ON applicant_qualifications(qualification_type_id);
 
--- ---------------------------------------------------------------------
--- TABLE: applicant_skills (M:N applicant <-> skill)
--- ---------------------------------------------------------------------
+-- TABLE: applicant_skills (M applicant <-> skill)
 CREATE TABLE applicant_skills (
     applicant_id    BIGINT NOT NULL REFERENCES applicant_profiles(user_id) ON DELETE CASCADE,
     skill_id        INT NOT NULL REFERENCES skills(id) ON DELETE CASCADE,

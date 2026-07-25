@@ -31,5 +31,5 @@ CREATE TABLE saved_reports (
 );
 
 CREATE TRIGGER trg_saved_reports_updated_at
-    BEFORE UPDATE ON saved_reports
-    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+BEFORE UPDATE ON saved_reports
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
