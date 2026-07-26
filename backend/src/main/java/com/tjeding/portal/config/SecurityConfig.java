@@ -1,5 +1,6 @@
 package com.tjeding.portal.config;
 
+import com.tjeding.portal.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -8,31 +9,32 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
- * PHASE 1 security posture:
- *  - Session management is stateless (JWT-ready), even though no JWT
- *    filter or auth endpoints exist yet.
+ * PHASE 2 security posture:
+ *  - Stateless sessions; auth is carried entirely in the JWT access
+ *    token on each request (see JwtAuthenticationFilter).
  *  - CSRF disabled, since this is a stateless JSON API (not form-based).
  *  - CORS is locked down to the configured frontend origin(s).
- *  - Every request is currently permitted ("permitAll") because there
- *    is no login flow to authenticate against yet - Phase 2 will lock
- *    down endpoints per-role (applicant/provider/admin) and add the
- *    JWT authentication filter to this chain.
- *  - A BCryptPasswordEncoder bean is exposed now so the Phase 2 user
- *    registration/login feature can depend on it immediately.
+ *  - /api/v1/auth/register, /login, /refresh-token, /logout are public;
+ *    /api/v1/auth/me requires a valid access token. Everything else is
+ *    still permitAll() until the corresponding feature adds real
+ *    per-role rules (see TODO below).
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final CorsProperties corsProperties;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(CorsProperties corsProperties) {
+    public SecurityConfig(CorsProperties corsProperties, JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.corsProperties = corsProperties;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
@@ -43,13 +45,27 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // TODO (Phase 2+): replace permitAll() with per-role rules once
-                        // authentication is implemented, e.g.:
-                        //   .requestMatchers("/api/auth/**").permitAll()
-                        //   .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers(
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/refresh-token",
+                                "/api/v1/auth/logout"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/api/v1/ping",
+                                "/actuator/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+                        .requestMatchers("/api/v1/auth/me").authenticated()
+                        // TODO (Phase 3+): replace permitAll() with per-role rules as each
+                        // feature (opportunities, applications, admin, etc.) is built, e.g.:
+                        //   .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         //   .anyRequest().authenticated()
                         .anyRequest().permitAll()
-                );
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
