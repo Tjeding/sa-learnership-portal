@@ -77,4 +77,8 @@ public class JwtTokenProvider {
     public String extractSubject(String token) {
         return parseClaims(token).getSubject();
     }
+
+    public String extractRole(String token) {
+        return parseClaims(token).get("role", String.class);
+    }
 }
