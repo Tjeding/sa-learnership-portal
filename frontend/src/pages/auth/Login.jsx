@@ -2,13 +2,51 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sprout, Quote } from "lucide-react";
 
+// Falls back to localhost for local dev; set VITE_API_URL in frontend/.env for other environments.
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
 export default function Login() {
   const [role, setRole] = useState("applicant");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    navigate(`/${role}`);
+    setError("");
+
+    const form = new FormData(e.target);
+    const payload = {
+      email: form.get("email"),
+      password: form.get("password"),
+    };
+
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/api/v1/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json();
+
+      if (!res.ok || !body.success) {
+        throw new Error(body?.error?.message || "Invalid email or password.");
+      }
+
+      const { accessToken, refreshToken, user } = body.data;
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Route by the account's actual role from the server, not the
+      // (cosmetic) tab the person happened to have selected.
+      navigate(`/${user.role}`);
+    } catch (err) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -27,7 +65,7 @@ export default function Login() {
           </p>
           <p style={{ marginTop: 16, color: "#a9b2ac", fontSize: 13.5 }}>Lindiwe M. — Software Development Learnership</p>
         </div>
-        <p style={{ color: "#8b948d", fontSize: 12.5 }}>This is a demo prototype — no real accounts are created.</p>
+        <p style={{ color: "#8b948d", fontSize: 12.5 }}>Real accounts are created — this now talks to the live API.</p>
       </div>
 
       <div className="auth-form-col">
@@ -43,19 +81,27 @@ export default function Login() {
             ))}
           </div>
 
+          {error && (
+            <div style={{ background: "#fdecea", color: "#a32424", padding: "10px 14px", borderRadius: 8, fontSize: 13.5, marginBottom: 16 }}>
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
             <div className="field">
               <label>Email address</label>
-              <input className="input" type="email" placeholder="you@example.co.za" defaultValue="demo@example.co.za" required />
+              <input className="input" name="email" type="email" placeholder="you@example.co.za" required />
             </div>
             <div className="field">
               <label>Password</label>
-              <input className="input" type="password" placeholder="••••••••" defaultValue="password" required />
+              <input className="input" name="password" type="password" placeholder="••••••••" required />
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 20 }}>
               <a href="#" className="text-sm" style={{ color: "var(--veld)", fontWeight: 600 }}>Forgot password?</a>
             </div>
-            <button className="btn btn-primary btn-block" type="submit">Log in as {role}</button>
+            <button className="btn btn-primary btn-block" type="submit" disabled={submitting}>
+              {submitting ? "Logging in…" : `Log in as ${role}`}
+            </button>
           </form>
 
           <p className="text-sm text-stone" style={{ textAlign: "center", marginTop: 20 }}>
