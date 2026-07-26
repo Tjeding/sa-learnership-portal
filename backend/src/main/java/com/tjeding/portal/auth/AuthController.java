@@ -40,7 +40,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ApiResponse<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
         authService.logout(request);
-        return ApiResponse.success();
+        return ApiResponse.success(null);
     }
 
     @GetMapping("/me")
