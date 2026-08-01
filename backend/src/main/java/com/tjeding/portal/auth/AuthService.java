@@ -70,14 +70,13 @@ public class AuthService {
                 .verificationToken(UUID.randomUUID().toString())
                 .verificationExpiresAt(Instant.now().plusSeconds(24 * 3600))
                 .build();
-        user = userRepository.save(user);
+        user = userRepository.saveAndFlush(user);
 
         if (req.role() == UserRole.applicant) {
             if (isBlank(req.firstName()) || isBlank(req.lastName())) {
                 throw new BadRequestException("firstName and lastName are required for applicant accounts.");
             }
             ApplicantProfile profile = ApplicantProfile.builder()
-                    .userId(user.getId())
                     .user(user)
                     .firstName(req.firstName().trim())
                     .lastName(req.lastName().trim())
@@ -90,7 +89,6 @@ public class AuthService {
                 throw new BadRequestException("organizationName and providerType are required for provider accounts.");
             }
             ProviderProfile profile = ProviderProfile.builder()
-                    .userId(user.getId())
                     .user(user)
                     .organizationName(req.organizationName().trim())
                     .providerType(req.providerType())

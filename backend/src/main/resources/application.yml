@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: sa-learnership-portal
   profiles:
@@ -7,7 +9,7 @@ spring:
   # JPA/Hibernate: Flyway owns the schema, Hibernate should never auto-generate DDL.
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     open-in-view: false
     properties:
       hibernate:
