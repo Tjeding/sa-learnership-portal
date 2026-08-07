@@ -13,10 +13,12 @@ RUN mvn -B clean package -DskipTests
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-RUN useradd --system --create-home appuser
+RUN useradd --system --create-home appuser \
+    && mkdir -p /app/uploads \
+    && chown -R appuser:appuser /app
 USER appuser
 
-COPY --from=build /app/target/portal.jar app.jar
+COPY --from=build --chown=appuser:appuser /app/target/portal.jar app.jar
 
 EXPOSE 8080
 

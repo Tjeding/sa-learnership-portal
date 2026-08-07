@@ -25,7 +25,7 @@ public class User {
     private Long id;
 
     /** Column is CITEXT in Postgres, so lookups/uniqueness are already case-insensitive at the DB level. */
-    @Column(name = "email", nullable = false, unique = true, columnDefinition = "citext")
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(name = "password_hash", nullable = false)
@@ -33,7 +33,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "role", nullable = false, columnDefinition = "user_role")
+    @Column(nullable = false, columnDefinition = "user_role")
     private UserRole role;
 
     @Column(name = "is_active", nullable = false)

@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -60,6 +61,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest()
                 .body(ApiResponse.error("DATA_INTEGRITY_VIOLATION",
                         "The request could not be completed because it conflicts with existing data."));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        log.warn("Upload rejected: exceeds server multipart limit");
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error("FILE_TOO_LARGE", "The uploaded file is too large."));
     }
 
     // ---- 401 / 403 ----

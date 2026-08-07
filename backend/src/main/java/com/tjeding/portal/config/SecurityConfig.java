@@ -15,15 +15,18 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
- * PHASE 2 security posture:
+ * PHASE 3 security posture:
  *  - Stateless sessions; auth is carried entirely in the JWT access
  *    token on each request (see JwtAuthenticationFilter).
  *  - CSRF disabled, since this is a stateless JSON API (not form-based).
  *  - CORS is locked down to the configured frontend origin(s).
  *  - /api/v1/auth/register, /login, /refresh-token, /logout are public;
- *    /api/v1/auth/me requires a valid access token. Everything else is
- *    still permitAll() until the corresponding feature adds real
- *    per-role rules (see TODO below).
+ *    /api/v1/auth/me requires a valid access token.
+ *  - /api/v1/applicant/** requires ROLE_APPLICANT, /api/v1/provider/**
+ *    requires ROLE_PROVIDER, /api/v1/admin/** requires ROLE_ADMIN.
+ *  - /uploads/** (CVs, profile images) is public for now - see the
+ *    caution note on WebConfig.
+ *  - Everything else not yet built stays permitAll() (see TODO below).
  */
 @Configuration
 @EnableWebSecurity
@@ -56,13 +59,16 @@ public class SecurityConfig {
                                 "/actuator/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/uploads/**",
+                                "/api/v1/reference/**"
                         ).permitAll()
                         .requestMatchers("/api/v1/auth/me").authenticated()
-                        // TODO (Phase 3+): replace permitAll() with per-role rules as each
-                        // feature (opportunities, applications, admin, etc.) is built, e.g.:
-                        //   .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        //   .anyRequest().authenticated()
+                        .requestMatchers("/api/v1/applicant/**").hasRole("APPLICANT")
+                        .requestMatchers("/api/v1/provider/**").hasRole("PROVIDER")
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        // TODO (Phase 4+): replace permitAll() with real rules as each
+                        // remaining feature (opportunities, applications, etc.) is built.
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
