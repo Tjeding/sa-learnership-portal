@@ -25,7 +25,8 @@ public class User {
     private Long id;
 
     /** Column is CITEXT in Postgres, so lookups/uniqueness are already case-insensitive at the DB level. */
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, columnDefinition = "CITEXT")
+    @JdbcTypeCode(SqlTypes.OTHER)
     private String email;
 
     @Column(name = "password_hash", nullable = false)
