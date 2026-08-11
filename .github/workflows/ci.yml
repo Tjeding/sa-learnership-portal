@@ -11,6 +11,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: sa_learnership
+          POSTGRES_USER: sa_learnership_user
+          POSTGRES_PASSWORD: Mog@le
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd="pg_isready -U sa_learnership_user -d sa_learnership"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 21
