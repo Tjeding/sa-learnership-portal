@@ -24,6 +24,7 @@ export default function Register() {
       firstName: form.get("firstName") || undefined,
       lastName: form.get("lastName") || undefined,
       organizationName: form.get("organizationName") || undefined,
+      contactPerson: form.get("contactPerson") || undefined,
       providerType: form.get("providerType") || undefined,
     };
 
@@ -31,22 +32,40 @@ export default function Register() {
     try {
       const res = await fetch(`${API_URL}/api/v1/auth/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
       });
-      const body = await res.json();
 
-      if (!res.ok || !body.success) {
-        throw new Error(body?.error?.message || "Registration failed. Please try again.");
+      const text = await res.text();
+
+      let body;
+      try {
+        body = text ? JSON.parse(text) : null;
+      } catch {
+        throw new Error(
+          `Server returned ${res.status}: ${text || "Unknown server error"}`
+        );
+      }
+
+      if (!res.ok || !body?.success) {
+        throw new Error(
+          body?.error?.message ||
+          body?.message ||
+          `Registration failed with status ${res.status}.`
+        );
       }
 
       const { accessToken, refreshToken, user } = body.data;
+
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
       localStorage.setItem("user", JSON.stringify(user));
 
       navigate(`/${user.role}`);
     } catch (err) {
+      console.error("Registration failed:", err);
       setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);

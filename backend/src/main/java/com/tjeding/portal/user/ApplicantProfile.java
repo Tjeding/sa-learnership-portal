@@ -32,6 +32,10 @@ public class ApplicantProfile {
     @JoinColumn(name = "user_id")
     private User user;
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     @Column(name = "first_name", nullable = false)
     private String firstName;
 

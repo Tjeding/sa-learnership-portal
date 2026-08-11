@@ -32,6 +32,10 @@ public class ProviderProfile {
     @JoinColumn(name = "user_id")
     private User user;
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     @Column(name = "organization_name", nullable = false)
     private String organizationName;
 

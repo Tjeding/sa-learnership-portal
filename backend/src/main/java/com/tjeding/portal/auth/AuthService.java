@@ -77,12 +77,11 @@ public class AuthService {
                 throw new BadRequestException("firstName and lastName are required for applicant accounts.");
             }
             ApplicantProfile profile = ApplicantProfile.builder()
-                    .userId(user.getId())
-                    .user(user)
                     .firstName(req.firstName().trim())
                     .lastName(req.lastName().trim())
                     .profileCompleted(false)
                     .build();
+            profile.setUser(user);
             applicantProfileRepository.save(profile);
             displayName = profile.getFirstName() + " " + profile.getLastName();
         } else {
@@ -90,14 +89,13 @@ public class AuthService {
                 throw new BadRequestException("organizationName and providerType are required for provider accounts.");
             }
             ProviderProfile profile = ProviderProfile.builder()
-                    .userId(user.getId())
-                    .user(user)
                     .organizationName(req.organizationName().trim())
                     .providerType(req.providerType())
                     .contactPerson(isBlank(req.contactPerson()) ? null : req.contactPerson().trim())
                     .phone(isBlank(req.phone()) ? null : req.phone().trim())
                     .verified(false)
                     .build();
+            profile.setUser(user);
             providerProfileRepository.save(profile);
             displayName = profile.getOrganizationName();
         }
