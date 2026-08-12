@@ -1,22 +1,186 @@
+# =========================================================
 # Java / Maven
+# =========================================================
+
 target/
 *.class
 *.jar
+*.war
+*.ear
+
+# Maven wrapper
 !.mvn/wrapper/maven-wrapper.jar
 
-# IDE
+# Maven generated files
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+
+
+# =========================================================
+# Spring Boot / Application
+# =========================================================
+
+# Application logs
+*.log
+logs/
+
+# Local runtime data
+*.pid
+
+# Generated/uploaded application data
+backend/uploads/
+
+# If uploads are ever created elsewhere
+uploads/
+
+
+# =========================================================
+# Environment / Secrets
+# =========================================================
+
+.env
+.env.*
+*.env
+
+# Keep example environment files
+!.env.example
+!backend/.env.example
+
+# Local configuration overrides
+application-local.yml
+application-local.yaml
+application-local.properties
+
+
+# =========================================================
+# IntelliJ IDEA
+# =========================================================
+
 .idea/
 *.iml
+*.iws
+*.ipr
+out/
+
+
+# =========================================================
+# VS Code
+# =========================================================
+
 .vscode/
+!.vscode/extensions.json
+!.vscode/settings.example.json
 
-# Env
-.env
-*.env.local
 
-# OS
-.DS_Store
-Thumbs.db
+# =========================================================
+# Eclipse
+# =========================================================
 
-# Node (frontend, future phases)
+.classpath
+.project
+.settings/
+
+
+# =========================================================
+# Node / React / Vite
+# =========================================================
+
 node_modules/
 dist/
+.vite/
+
+# npm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Package manager caches
+.npm/
+.yarn/
+.pnpm-store/
+
+
+# =========================================================
+# Frontend local environment
+# =========================================================
+
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+
+# =========================================================
+# OS generated files
+# =========================================================
+
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+
+Desktop.ini
+
+
+# =========================================================
+# Temporary files
+# =========================================================
+
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+*.bak
+
+
+# =========================================================
+# Coverage / Test Reports
+# =========================================================
+
+coverage/
+*.coverage
+*.lcov
+
+# JaCoCo
+jacoco.exec
+target/site/jacoco/
+
+
+# =========================================================
+# Database / Local Development
+# =========================================================
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+
+# PostgreSQL dumps/backups
+*.dump
+*.backup
+*.sql.bak
+
+
+# =========================================================
+# Docker
+# =========================================================
+
+# Docker override files containing local configuration
+docker-compose.override.yml
+docker-compose.local.yml
+
+
+# =========================================================
+# Generated documentation / build output
+# =========================================================
+
+generated/
+build/
