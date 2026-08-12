@@ -2,8 +2,6 @@ package com.tjeding.portal.user;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 
@@ -24,16 +22,15 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Column is CITEXT in Postgres, so lookups/uniqueness are already case-insensitive at the DB level. */
-    @Column(name = "email", nullable = false, unique = true, columnDefinition = "citext")
+    /** Email is stored as VARCHAR(255), with a LOWER(email) unique index enforcing case-insensitive uniqueness. */
+    @Column(nullable = false, length = 255)
     private String email;
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "role", nullable = false, columnDefinition = "user_role")
+    @Column(nullable = false)
     private UserRole role;
 
     @Column(name = "is_active", nullable = false)
