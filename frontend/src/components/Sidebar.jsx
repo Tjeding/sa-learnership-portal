@@ -22,8 +22,8 @@ export default function Sidebar({ role, sections }) {
       </div>
 
       <nav className="sidebar-nav">
-        {sections.map((section) => (
-          <div key={section.label || "main"}>
+        {sections.map((section, index) => (
+          <div key={section.label || `section-${index}`}>
             {section.label && <div className="sidebar-section-label">{section.label}</div>}
             {section.items.map((item) => (
               <NavLink
