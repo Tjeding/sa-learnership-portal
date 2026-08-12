@@ -6,11 +6,8 @@
 -- =====================================================================
 
 -- EXTENSIONS
--- citext: case-insensitive text, used for emails so 'Jane@x.com' and
---         'jane@x.com' are treated as the same login.
 -- pgcrypto: gives us gen_random_uuid() and crypt()/gen_salt() if you
 --           ever want to verify password hashes at the DB level.
-CREATE EXTENSION IF NOT EXISTS citext;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- ENUM TYPES
@@ -64,7 +61,7 @@ $$ LANGUAGE plpgsql;
 -- applicant_profiles / provider_profiles (1:1 extension tables).
 CREATE TABLE users (
     id              BIGSERIAL PRIMARY KEY,
-    email           CITEXT UNIQUE NOT NULL,
+    email           VARCHAR(255) NOT NULL,
     password_hash   TEXT NOT NULL,           -- store bcrypt/argon2 hash from Java (e.g. Spring Security BCryptPasswordEncoder), never plaintext
     role            user_role NOT NULL,
     is_active       BOOLEAN NOT NULL DEFAULT TRUE,
@@ -77,6 +74,9 @@ CREATE TABLE users (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE UNIQUE INDEX uq_users_email_lower
+    ON users (LOWER(email));
 
 CREATE TRIGGER trg_users_updated_at
 BEFORE UPDATE ON users
