@@ -23,6 +23,7 @@ export default function Profile() {
   const [notice, setNotice] = useState("");
   const [cvUploading, setCvUploading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
+  const [nqfLevels, setNqfLevels] = useState([]);
 
   const cvInputRef = useRef(null);
   const imageInputRef = useRef(null);
@@ -50,6 +51,17 @@ export default function Profile() {
     loadProfile();
     return () => { cancelled = true; };
   }, [navigate]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_URL}/api/v1/reference/nqf-levels`)
+      .then((res) => res.json())
+      .then((body) => {
+        if (!cancelled && body.success) setNqfLevels(body.data);
+      })
+      .catch(() => {}); // non-critical for page load; badge just won't render
+    return () => { cancelled = true; };
+  }, []);
 
   function updateField(field, value) {
     setProfile((prev) => ({ ...prev, [field]: value }));
@@ -319,9 +331,13 @@ export default function Profile() {
             <div className="card">
               <div className="card-header"><span className="card-title">NQF Reference</span></div>
               <p className="text-sm text-stone" style={{ marginBottom: 10 }}>Your highest verified qualification maps to:</p>
-              <div className="badge badge-teal" style={{ fontSize: 13, padding: "6px 12px" }}>
-                {nqfLevels[3].name} — {nqfLevels[3].example}
-              </div>
+              {nqfLevels.length > 0 ? (
+                <div className="badge badge-teal" style={{ fontSize: 13, padding: "6px 12px" }}>
+                  {nqfLevels[3].levelName} — {nqfLevels[3].typicalExample}
+                </div>
+              ) : (
+                <p className="text-sm text-stone">Loading…</p>
+              )}
             </div>
           </div>
         </div>
