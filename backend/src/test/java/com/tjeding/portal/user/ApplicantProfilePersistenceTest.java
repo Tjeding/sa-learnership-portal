@@ -8,7 +8,10 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
+@DataJpaTest(properties = {
+        "spring.flyway.locations=classpath:db/migration-h2-test",
+        "spring.jpa.hibernate.ddl-auto=none"
+})
 @ActiveProfiles("test")
 class ApplicantProfilePersistenceTest {
 
