@@ -24,8 +24,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Column is CITEXT in Postgres, so lookups/uniqueness are already case-insensitive at the DB level. */
-    @Column(nullable = false, unique = true, columnDefinition = "CITEXT")
+    /** Email is stored as VARCHAR(255), with a LOWER(email) unique index enforcing case-insensitive uniqueness. */
+    @Column(nullable = false, length = 255)
     private String email;
 
     @Column(name = "password_hash", nullable = false)
