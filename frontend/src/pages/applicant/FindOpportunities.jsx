@@ -1,29 +1,44 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { Search, MapPin, Clock, Wallet, Bookmark, SlidersHorizontal } from "lucide-react";
-import { opportunities, sectors, nqfLevels, currentApplicant } from "../../data/mockData";
+import { currentApplicant } from "../../data/mockData";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export default function FindOpportunities() {
   const [q, setQ] = useState("");
   const [type, setType] = useState("all");
   const [sector, setSector] = useState("all");
+  const [sectors, setSectors] = useState([]);
+  const [opportunities, setOpportunities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API_URL}/api/v1/opportunities`).then((r) => r.json()),
+      fetch(`${API_URL}/api/v1/reference/sectors`).then((r) => r.json()),
+    ]).then(([opps, sec]) => {
+      if (opps.success) setOpportunities(opps.data);
+      if (sec.success) setSectors(sec.data);
+    }).finally(() => setLoading(false));
+  }, []);
 
   const results = useMemo(() => {
-    return opportunities.filter((o) => o.status === "approved").filter((o) => {
-      const matchesQ = !q || o.title.toLowerCase().includes(q.toLowerCase()) || o.provider.toLowerCase().includes(q.toLowerCase());
-      const matchesType = type === "all" || o.type === type;
-      const matchesSector = sector === "all" || o.sector === sector;
+    return opportunities.filter((o) => {
+      const matchesQ = !q || o.title.toLowerCase().includes(q.toLowerCase()) || (o.providerName || "").toLowerCase().includes(q.toLowerCase());
+      const matchesType = type === "all" || o.opportunityType === type;
+      const matchesSector = sector === "all" || o.sectorName === sector;
       return matchesQ && matchesType && matchesSector;
     });
-  }, [q, type, sector]);
+  }, [q, type, sector, opportunities]);
 
   return (
     <>
       <Topbar
         eyebrow="Applicant"
         title="Find Opportunities"
-        subtitle={`${results.length} open listings match your filters`}
+        subtitle={loading ? "Loading…" : `${results.length} open listings match your filters`}
         notifCount={3} msgCount={2}
         user={{ name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" }}
       />
@@ -42,7 +57,7 @@ export default function FindOpportunities() {
             </select>
             <select className="input" style={{ maxWidth: 220 }} value={sector} onChange={(e) => setSector(e.target.value)}>
               <option value="all">All sectors</option>
-              {sectors.map((s) => <option key={s} value={s}>{s}</option>)}
+              {sectors.map((s) => <option key={s.id} value={s.name}>{s.name}</option>)}
             </select>
             <button className="btn btn-outline"><SlidersHorizontal size={15} /> More filters</button>
           </div>
@@ -52,17 +67,17 @@ export default function FindOpportunities() {
           {results.map((o) => (
             <div key={o.id} className="opp-card">
               <div className="opp-card-top">
-                <span className="badge badge-sun">{o.type}</span>
+                <span className="badge badge-sun">{o.opportunityType}</span>
                 <button className="icon-btn" style={{ width: 32, height: 32 }} aria-label="Save"><Bookmark size={14} /></button>
               </div>
               <div>
                 <h4>{o.title}</h4>
-                <p className="text-sm text-stone" style={{ marginTop: 4 }}>{o.provider} · {o.sector}</p>
+                <p className="text-sm text-stone" style={{ marginTop: 4 }}>{o.providerName} · {o.sectorName}</p>
               </div>
               <div className="opp-meta">
                 <span><MapPin size={13} /> {o.location}, {o.province}</span>
-                <span><Clock size={13} /> {o.duration} months</span>
-                <span><Wallet size={13} /> R{o.stipend.toLocaleString()}/mo</span>
+                <span><Clock size={13} /> {o.durationMonths} months</span>
+                <span><Wallet size={13} /> {o.stipendAmount ? `R${Number(o.stipendAmount).toLocaleString()}/${o.stipendPeriod}` : "Unpaid"}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
                 <span className="text-sm text-stone">Closes {o.closingDate}</span>
@@ -70,7 +85,7 @@ export default function FindOpportunities() {
               </div>
             </div>
           ))}
-          {results.length === 0 && (
+          {!loading && results.length === 0 && (
             <div className="empty-state" style={{ gridColumn: "1 / -1" }}>
               <h3>No opportunities match your filters</h3>
               <p>Try broadening your search or clearing a filter.</p>

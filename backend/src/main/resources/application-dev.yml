@@ -1,7 +1,11 @@
 spring:
+  config:
+    # Allow `mvn spring-boot:run` from backend/ to load local dev values.
+    import: optional:file:.env[.properties]
+
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:sa_learnership}
-    username: ${DB_USERNAME:DB_USERNAME}
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5433}/${POSTGRES_DB:sa_learnership}
+    username: ${DB_USERNAME:sa_learnership_user}
     password: ${DB_PASSWORD:DB_PASSWORD}
     hikari:
       maximum-pool-size: 10
