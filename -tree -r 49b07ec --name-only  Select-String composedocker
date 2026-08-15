@@ -1,0 +1,47 @@
+[33mcommit 49b07ecf72e1466b901b2dafc74eb6127671bc4b[m
+Author: Tjeding <makubungtjeding@gmail.com>
+Date:   Wed Aug 12 21:15:13 2026 +0200
+
+    Users can login, edit profile and upload pictures and resume.
+
+D	docker/docker-compose.yml
+
+[33mcommit 07b4b496767861fe621430083ce1df1bdabbd957[m
+Author: Tjeding <makubungtjeding@gmail.com>
+Date:   Fri Aug 7 23:40:21 2026 +0200
+
+    Users can Build their profiles
+
+M	docker/docker-compose.yml
+
+[33mcommit 2dce8155ee18a41b0dad694470069fcd54c96d36[m
+Author: Tjeding <makubungtjeding@gmail.com>
+Date:   Sat Aug 1 21:18:40 2026 +0200
+
+    Authentication and database save at pgAdmin.
+
+M	docker/docker-compose.yml
+
+[33mcommit 35f6dbabb06e9f750c64c7999b987dffba71743a[m
+Author: Tjeding <makubungtjeding@gmail.com>
+Date:   Sat Jul 25 21:42:29 2026 +0200
+
+    Phase 1 of my project. Setting up everything.
+
+M	docker/docker-compose.yml
+
+[33mcommit 14ca33ad0e2422d2213c64f0b8a8bc6ed40cc8cc[m
+Author: Tjeding <makubungtjeding@gmail.com>
+Date:   Tue Jul 21 23:24:51 2026 +0200
+
+    update schema stuff.
+
+M	docker/docker-compose.yml
+
+[33mcommit 38deb14f3dcc5209ddf88c558fbb2f13677c7452[m
+Author: Tjeding <makubungtjeding@gmail.com>
+Date:   Sat Jun 27 01:51:39 2026 +0200
+
+    initial directory structure.
+
+A	docker/docker-compose.yml

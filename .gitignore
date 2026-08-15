@@ -174,8 +174,8 @@ target/site/jacoco/
 # =========================================================
 
 # Docker override files containing local configuration
-docker-compose.override.yml
-docker-compose.local.yml
+!docker-compose.override.yml
+!docker-compose.local.yml
 
 
 # =========================================================
