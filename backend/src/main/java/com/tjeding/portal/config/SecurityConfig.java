@@ -61,7 +61,8 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
                                 "/uploads/**",
-                                "/api/v1/reference/**"
+                                "/api/v1/reference/**",
+                                "/api/v1/opportunities/**"
                         ).permitAll()
                         .requestMatchers("/api/v1/auth/me").authenticated()
                         .requestMatchers("/api/v1/applicant/**").hasRole("APPLICANT")
