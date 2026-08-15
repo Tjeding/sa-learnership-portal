@@ -11,7 +11,28 @@ export default function OpportunityDetail() {
   const [opp, setOpp] = useState(null);
   const [error, setError] = useState("");
   const [applied, setApplied] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [applyError, setApplyError] = useState("");
 
+  async function handleApply() {
+    setApplying(true);
+    setApplyError("");
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_URL}/api/v1/applicant/applications`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ opportunityId: opp.id }),
+      });
+      const body = await res.json();
+      if (!res.ok || !body.success) throw new Error(body?.error?.message || "Failed to apply.");
+      setApplied(true);
+    } catch (err) {
+      setApplyError(err.message);
+    } finally {
+      setApplying(false);
+    }
+  }
   useEffect(() => {
     let cancelled = false;
     fetch(`${API_URL}/api/v1/opportunities/${id}`)
@@ -101,13 +122,18 @@ export default function OpportunityDetail() {
               <div style={{ fontSize: 13, color: "var(--stone)", marginBottom: 4 }}>Minimum NQF level</div>
               <div style={{ fontWeight: 700, marginBottom: 20 }}>{opp.minNqfLevelName || "Not specified"}</div>
 
+              {applyError && (
+                <div style={{ background: "#fdecea", color: "#a32424", padding: "8px 12px", borderRadius: 8, fontSize: 12.5, marginBottom: 10 }}>
+                  {applyError}
+                </div>
+              )}
               {applied ? (
                 <div className="badge badge-veld" style={{ width: "100%", justifyContent: "center", padding: "10px 0" }}>
                   <CheckCircle2 size={14} /> Application submitted
                 </div>
               ) : (
-                <button className="btn btn-primary btn-block" onClick={() => setApplied(true)} title="Applications aren't wired to the backend yet">
-                  Apply Now
+                <button className="btn btn-primary btn-block" onClick={handleApply} disabled={applying}>
+                  {applying ? "Submitting…" : "Apply Now"}
                 </button>
               )}
               <button className="btn btn-outline btn-block" style={{ marginTop: 10 }}>
