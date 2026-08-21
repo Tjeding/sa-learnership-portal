@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { Search, MapPin, Clock, Wallet, Bookmark, SlidersHorizontal } from "lucide-react";
-import { currentApplicant } from "../../data/mockData";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -13,6 +13,7 @@ export default function FindOpportunities() {
   const [sectors, setSectors] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { topbarUser } = useAuth();
 
   useEffect(() => {
     Promise.all([
@@ -40,7 +41,7 @@ export default function FindOpportunities() {
         title="Find Opportunities"
         subtitle={loading ? "Loading…" : `${results.length} open listings match your filters`}
         notifCount={3} msgCount={2}
-        user={{ name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" }}
+        user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }}
       />
       <div className="page">
         <div className="card" style={{ marginBottom: "var(--sp-5)" }}>

@@ -1,16 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Topbar from "../../components/Topbar";
 import { StatusBadge } from "../../components/Widgets";
 import { Search, ShieldCheck, Ban, Eye } from "lucide-react";
-import { adminUsers } from "../../data/mockData";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
+function authHeaders() {
+  const token = localStorage.getItem("accessToken");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 export default function UserManagement() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [q, setQ] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
-  const filtered = adminUsers.filter((u) =>
-    (roleFilter === "all" || u.role === roleFilter) &&
-    (u.name.toLowerCase().includes(q.toLowerCase()) || u.email.toLowerCase().includes(q.toLowerCase()))
-  );
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/v1/admin/users`, { headers: authHeaders() })
+      .then((res) => res.json())
+      .then((body) => {
+        if (!body.success) throw new Error(body?.error?.message || "Failed to load users.");
+        setUsers(body.data);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = users.filter((u) => {
+    const role = (u.role || "").toLowerCase();
+    const name = (u.displayName || "").toLowerCase();
+    const email = (u.email || "").toLowerCase();
+    return (roleFilter === "all" || role === roleFilter) &&
+      (name.includes(q.toLowerCase()) || email.includes(q.toLowerCase()));
+  });
 
   return (
     <>
@@ -20,6 +44,7 @@ export default function UserManagement() {
         user={{ name: "Admin User", role: "Super Administrator", initials: "AU", color: "var(--role-admin)" }}
       />
       <div className="page">
+        {error && <div style={{ background: "#fdecea", color: "#a32424", padding: "10px 14px", borderRadius: 8, fontSize: 13.5, marginBottom: 16 }}>{error}</div>}
         <div className="card" style={{ marginBottom: 20 }}>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <div className="search-bar" style={{ flex: 1, minWidth: 220 }}>
@@ -40,13 +65,14 @@ export default function UserManagement() {
             <table className="data-table">
               <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th><th></th></tr></thead>
               <tbody>
-                {filtered.map((u) => (
+                {loading && <tr><td colSpan={6}><p className="text-sm text-stone">Loading…</p></td></tr>}
+                {!loading && filtered.map((u) => (
                   <tr key={u.id}>
-                    <td className="cell-primary">{u.name}</td>
+                    <td className="cell-primary">{u.displayName}</td>
                     <td className="text-stone">{u.email}</td>
                     <td style={{ textTransform: "capitalize" }}>{u.role}</td>
-                    <td>{u.joined}</td>
-                    <td><StatusBadge status={u.status} /></td>
+                    <td>{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}</td>
+                    <td><StatusBadge status={u.active ? "active" : u.verified ? "active" : "pending"} /></td>
                     <td>
                       <div style={{ display: "flex", gap: 6 }}>
                         <button className="icon-btn" style={{ width: 30, height: 30 }} title="View"><Eye size={13} /></button>
@@ -56,6 +82,9 @@ export default function UserManagement() {
                     </td>
                   </tr>
                 ))}
+                {!loading && filtered.length === 0 && (
+                  <tr><td colSpan={6}><div className="empty-state"><h3>No users found</h3></div></td></tr>
+                )}
               </tbody>
             </table>
           </div>

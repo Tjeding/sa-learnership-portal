@@ -1,12 +1,13 @@
 import SettingsView from "../../components/SettingsView";
-import { currentApplicant } from "../../data/mockData";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Settings() {
+  const { topbarUser } = useAuth();
   return (
     <SettingsView
       topbarProps={{
         eyebrow: "Applicant", notifCount: 3, msgCount: 2,
-        user: { name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" },
+        user: topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" },
       }}
     />
   );

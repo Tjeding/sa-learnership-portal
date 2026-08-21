@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { StatCard, StatusBadge, Donut } from "../../components/Widgets";
 import { FileText, Star, Award, ChevronRight, Sparkles, Clock } from "lucide-react";
-import { currentApplicant } from "../../data/mockData";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 function authHeaders() {
@@ -13,6 +13,7 @@ function authHeaders() {
 
 export default function ApplicantDashboard() {
   const navigate = useNavigate();
+  const { topbarUser } = useAuth();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
 
@@ -36,7 +37,7 @@ export default function ApplicantDashboard() {
     return (
       <>
         <Topbar eyebrow="Applicant" title="Dashboard" notifCount={0} msgCount={0}
-          user={{ name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" }} />
+          user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }} />
         <div className="page"><div style={{ background: "#fdecea", color: "#a32424", padding: "12px 16px", borderRadius: 8 }}>{error}</div></div>
       </>
     );
@@ -46,7 +47,7 @@ export default function ApplicantDashboard() {
     return (
       <>
         <Topbar eyebrow="Applicant" title="Dashboard" subtitle="Loading…" notifCount={0} msgCount={0}
-          user={{ name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" }} />
+          user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }} />
         <div className="page"><p className="text-sm text-stone">Loading…</p></div>
       </>
     );
@@ -62,10 +63,10 @@ export default function ApplicantDashboard() {
     <>
       <Topbar
         eyebrow="Applicant"
-        title={`Welcome, ${currentApplicant.name.split(" ")[0]} 👋`}
+        title={`Welcome${topbarUser ? `, ${topbarUser.name.split(" ")[0]}` : ""} 👋`}
         subtitle="Let's find the right opportunity for your future."
         notifCount={3} msgCount={2}
-        user={{ name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" }}
+        user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }}
       />
       <div className="page">
         <div className="grid grid-3" style={{ marginBottom: "var(--sp-5)" }}>

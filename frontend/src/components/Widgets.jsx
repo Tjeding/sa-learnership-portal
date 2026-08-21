@@ -1,4 +1,4 @@
-import { statusColor, statusLabel } from "../data/mockData";
+import { statusColor, statusLabel } from "../data/constants";
 
 export function StatCard({ icon: Icon, label, value, foot, footUp, tint = "veld" }) {
   return (
