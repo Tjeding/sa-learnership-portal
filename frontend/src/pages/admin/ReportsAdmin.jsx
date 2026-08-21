@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import Topbar from "../../components/Topbar";
 import { MiniBarChart, HBar, Donut } from "../../components/Widgets";
 import { Download, FileDown, Save } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 function authHeaders() {
@@ -22,6 +23,7 @@ function downloadBlob(blob, filename) {
 }
 
 export default function ReportsAdmin() {
+  const { topbarUser } = useAuth();
   const [tab, setTab] = useState(tabs[0]);
   const [volumeData, setVolumeData] = useState([]);
   const [placementData, setPlacementData] = useState([]);
@@ -136,7 +138,7 @@ export default function ReportsAdmin() {
       <Topbar
         eyebrow="Admin" title="Reports & Analytics" subtitle="The 3 core dashboard reports, plus a custom view builder."
         notifCount={2} msgCount={0}
-        user={{ name: "Admin User", role: "Super Administrator", initials: "AU", color: "var(--role-admin)" }}
+        user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
         actions={
           reportKey[tab] ? (
             <>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { StatusBadge } from "../../components/Widgets";
 import { Search, Star, X, Eye } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -13,6 +14,7 @@ function authHeaders() {
 
 export default function Applications() {
   const navigate = useNavigate();
+  const { topbarUser } = useAuth();
   const [rows, setRows] = useState([]);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
@@ -54,7 +56,7 @@ export default function Applications() {
       <Topbar
         eyebrow="Provider" title="Applications" subtitle="Review, shortlist and reject applicants across all your listings."
         notifCount={3} msgCount={4}
-        user={{ name: "Thabo Ndlovu", role: "Tech Solutions SA", initials: "TN", color: "var(--sun-deep)" }}
+        user={topbarUser || { name: "Provider", role: "Provider", initials: "?", color: "var(--sun-deep)" }}
       />
       <div className="page">
         {error && (

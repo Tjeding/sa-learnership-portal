@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { StatCard, HBar, MiniBarChart } from "../../components/Widgets";
 import { Users, Building2, Briefcase, FileText, UserCheck, CheckCircle2, BarChart3, Settings2 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 function authHeaders() {
@@ -11,6 +12,7 @@ function authHeaders() {
 }
 
 export default function AdminDashboard() {
+  const { topbarUser } = useAuth();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
 
@@ -32,9 +34,9 @@ export default function AdminDashboard() {
   return (
     <>
       <Topbar
-        eyebrow="Admin" title="Welcome, Admin User 🛡️" subtitle="System overview and management."
+        eyebrow="Admin" title={`Welcome${topbarUser ? `, ${topbarUser.name.split(" ")[0]}` : ""} 🛡️`} subtitle="System overview and management."
         notifCount={2} msgCount={0}
-        user={{ name: "Admin User", role: "Super Administrator", initials: "AU", color: "var(--role-admin)" }}
+        user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
       />
       <div className="page">
         <div className="grid grid-4" style={{ marginBottom: "var(--sp-5)" }}>

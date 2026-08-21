@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { StatCard, StatusBadge, Donut } from "../../components/Widgets";
 import { Briefcase, ClipboardList, Star, UserCheck, Plus } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 function authHeaders() {
@@ -14,6 +15,7 @@ const STATUS_LABELS = { submitted: "Received", under_review: "In Review", shortl
 
 export default function ProviderDashboard() {
   const navigate = useNavigate();
+  const { topbarUser } = useAuth();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
 
@@ -43,9 +45,9 @@ export default function ProviderDashboard() {
   return (
     <>
       <Topbar
-        eyebrow="Provider" title="Welcome, Thabo Ndlovu 👋" subtitle="Here's what's happening with your opportunities."
+        eyebrow="Provider" title={`Welcome${topbarUser ? `, ${topbarUser.name.split(" ")[0]}` : ""} \u{1F44B}`} subtitle="Here's what's happening with your opportunities."
         notifCount={3} msgCount={4}
-        user={{ name: "Thabo Ndlovu", role: "Tech Solutions SA", initials: "TN", color: "var(--sun-deep)" }}
+        user={topbarUser || { name: "Provider", role: "Provider", initials: "?", color: "var(--sun-deep)" }}
         actions={<Link to="/provider/opportunities/new" className="btn btn-gold btn-sm"><Plus size={14} /> Post New Opportunity</Link>}
       />
       <div className="page">

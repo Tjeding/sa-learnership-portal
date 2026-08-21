@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Topbar from "../../components/Topbar";
 import { StatusBadge } from "../../components/Widgets";
 import { CheckCircle2, XCircle, Eye } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -11,6 +12,7 @@ function authHeaders() {
 }
 
 export default function OpportunitiesAdmin() {
+  const { topbarUser } = useAuth();
   const [rows, setRows] = useState([]);
   const [filter, setFilter] = useState("pending_approval");
   const [loading, setLoading] = useState(true);
@@ -65,7 +67,7 @@ export default function OpportunitiesAdmin() {
       <Topbar
         eyebrow="Admin" title="Opportunities" subtitle="Approve, reject or remove provider listings."
         notifCount={2} msgCount={0}
-        user={{ name: "Admin User", role: "Super Administrator", initials: "AU", color: "var(--role-admin)" }}
+        user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
       />
       <div className="page">
         {error && (
