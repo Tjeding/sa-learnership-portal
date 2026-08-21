@@ -1,19 +1,44 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { StatCard, StatusBadge, Donut } from "../../components/Widgets";
-import { Briefcase, ClipboardList, Star, UserCheck, Download, Plus } from "lucide-react";
-import { providerApplicants, opportunities } from "../../data/mockData";
+import { Briefcase, ClipboardList, Star, UserCheck, Plus } from "lucide-react";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+function authHeaders() {
+  const token = localStorage.getItem("accessToken");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+const STATUS_COLORS = { submitted: "var(--teal)", under_review: "var(--sun)", shortlisted: "var(--veld)", rejected: "var(--rust)" };
+const STATUS_LABELS = { submitted: "Received", under_review: "In Review", shortlisted: "Shortlisted", rejected: "Rejected" };
 
 export default function ProviderDashboard() {
-  const statusCounts = ["submitted", "under_review", "shortlisted", "rejected"].map((s) => providerApplicants.filter((a) => a.status === s).length);
-  const total = statusCounts.reduce((a, b) => a + b, 0) || 1;
-  const donutSegs = [
-    { label: "Received", value: statusCounts[0] || 0.001, color: "var(--teal)" },
-    { label: "In Review", value: statusCounts[1] || 0.001, color: "var(--sun)" },
-    { label: "Shortlisted", value: statusCounts[2] || 0.001, color: "var(--veld)" },
-    { label: "Rejected", value: statusCounts[3] || 0.001, color: "var(--rust)" },
-  ];
-  const topOpportunities = opportunities.filter((o) => o.status === "approved").sort((a, b) => b.applications - a.applications).slice(0, 3);
+  const navigate = useNavigate();
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_URL}/api/v1/provider/dashboard`, { headers: authHeaders() })
+      .then((res) => {
+        if (res.status === 401) { navigate("/login"); return null; }
+        return res.json();
+      })
+      .then((body) => {
+        if (cancelled || !body) return;
+        if (!body.success) throw new Error(body?.error?.message || "Failed to load dashboard.");
+        setData(body.data);
+      })
+      .catch((err) => !cancelled && setError(err.message));
+    return () => { cancelled = true; };
+  }, [navigate]);
+
+  if (error) return <div className="page"><div style={{ background: "#fdecea", color: "#a32424", padding: "12px 16px", borderRadius: 8 }}>{error}</div></div>;
+  if (!data) return <div className="page"><p className="text-sm text-stone">Loading…</p></div>;
+
+  const statusKeys = Object.keys(data.applicationsByStatus);
+  const total = Object.values(data.applicationsByStatus).reduce((a, b) => a + b, 0) || 1;
+  const donutSegs = statusKeys.map((k) => ({ label: STATUS_LABELS[k], value: data.applicationsByStatus[k] || 0.001, color: STATUS_COLORS[k] }));
 
   return (
     <>
@@ -25,10 +50,10 @@ export default function ProviderDashboard() {
       />
       <div className="page">
         <div className="grid grid-4" style={{ marginBottom: "var(--sp-5)" }}>
-          <StatCard icon={Briefcase} label="Active Opportunities" value="7" foot="View all" tint="sun" />
-          <StatCard icon={ClipboardList} label="Total Applications" value="156" foot="This month" tint="teal" />
-          <StatCard icon={Star} label="Shortlisted" value="18" foot="This month" tint="veld" />
-          <StatCard icon={UserCheck} label="Hired / Placed" value="6" foot="This month" footUp tint="veld" />
+          <StatCard icon={Briefcase} label="Active Opportunities" value={data.activeOpportunities} tint="sun" />
+          <StatCard icon={ClipboardList} label="Total Applications" value={data.totalApplications} tint="teal" />
+          <StatCard icon={Star} label="Shortlisted" value={data.shortlistedCount} tint="veld" />
+          <StatCard icon={UserCheck} label="Hired / Placed" value={data.hiredCount} footUp tint="veld" />
         </div>
 
         <div className="grid grid-2-1">
@@ -38,20 +63,21 @@ export default function ProviderDashboard() {
               <Link to="/provider/applications" className="card-link">View All</Link>
             </div>
             <div className="list-plain">
-              {providerApplicants.slice(0, 5).map((a) => (
+              {data.recentApplications.map((a) => (
                 <div key={a.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--line-soft)" }}>
                   <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                     <div className="avatar" style={{ background: "var(--sun-deep)", width: 34, height: 34, fontSize: 12 }}>
-                      {a.name.split(" ").map((n) => n[0]).join("")}
+                      {a.applicantName.split(" ").map((n) => n[0]).join("")}
                     </div>
                     <div>
-                      <div className="cell-primary">{a.name}</div>
-                      <div className="cell-sub">{a.opportunity} · {a.appliedAt}</div>
+                      <div className="cell-primary">{a.applicantName}</div>
+                      <div className="cell-sub">{a.opportunityTitle} · {new Date(a.appliedAt).toLocaleDateString()}</div>
                     </div>
                   </div>
                   <StatusBadge status={a.status} />
                 </div>
               ))}
+              {data.recentApplications.length === 0 && <p className="text-sm text-stone" style={{ padding: "10px 0" }}>No applications yet.</p>}
             </div>
           </div>
 
@@ -60,10 +86,10 @@ export default function ProviderDashboard() {
             <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
               <Donut segments={donutSegs} size={110} stroke={18} />
               <div style={{ flex: 1 }}>
-                {["Received", "In Review", "Shortlisted", "Rejected"].map((label, i) => (
-                  <div className="legend-row" key={label}>
-                    <span className="legend-swatch" style={{ background: donutSegs[i].color }} />
-                    {label} <span className="legend-val">{Math.round((statusCounts[i] / total) * 100)}%</span>
+                {statusKeys.map((k) => (
+                  <div className="legend-row" key={k}>
+                    <span className="legend-swatch" style={{ background: STATUS_COLORS[k] }} />
+                    {STATUS_LABELS[k]} <span className="legend-val">{Math.round((data.applicationsByStatus[k] / total) * 100)}%</span>
                   </div>
                 ))}
               </div>
@@ -71,29 +97,22 @@ export default function ProviderDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-2-1" style={{ marginTop: "var(--sp-5)" }}>
-          <div className="card">
-            <div className="card-header">
-              <span className="card-title">Top Opportunities</span>
-              <Link to="/provider/opportunities" className="card-link">View All</Link>
-            </div>
-            <div className="list-plain">
-              {topOpportunities.map((o) => (
-                <div key={o.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--line-soft)" }}>
-                  <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                    <div className="stat-icon" style={{ background: "var(--sun-tint)", color: "var(--sun-deep)" }}><Briefcase size={16} /></div>
-                    <div className="cell-primary" style={{ fontSize: 13.5 }}>{o.title}</div>
-                  </div>
-                  <span className="text-sm text-stone">{o.applications} applications</span>
-                </div>
-              ))}
-            </div>
+        <div className="card" style={{ marginTop: "var(--sp-5)" }}>
+          <div className="card-header">
+            <span className="card-title">Top Opportunities</span>
+            <Link to="/provider/opportunities" className="card-link">View All</Link>
           </div>
-
-          <div className="card" style={{ background: "var(--veld-tint)", border: "none" }}>
-            <div style={{ fontWeight: 700, marginBottom: 8 }}>Need help?</div>
-            <p className="text-sm" style={{ color: "var(--ink-soft)", marginBottom: 16 }}>Visit our provider support center for posting tips and SETA guidance.</p>
-            <button className="btn btn-primary btn-sm"><Download size={14} /> Download Applications (CSV)</button>
+          <div className="list-plain">
+            {data.topOpportunities.map((o) => (
+              <div key={o.opportunityId} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--line-soft)" }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <div className="stat-icon" style={{ background: "var(--sun-tint)", color: "var(--sun-deep)" }}><Briefcase size={16} /></div>
+                  <div className="cell-primary" style={{ fontSize: 13.5 }}>{o.title}</div>
+                </div>
+                <span className="text-sm text-stone">{o.applicationCount} applications</span>
+              </div>
+            ))}
+            {data.topOpportunities.length === 0 && <p className="text-sm text-stone" style={{ padding: "10px 0" }}>No applications yet.</p>}
           </div>
         </div>
       </div>
