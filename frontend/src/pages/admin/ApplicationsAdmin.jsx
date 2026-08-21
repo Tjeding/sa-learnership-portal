@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Topbar from "../../components/Topbar";
 import { StatusBadge } from "../../components/Widgets";
 import { Download, Search } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -11,6 +12,7 @@ function authHeaders() {
 }
 
 export default function ApplicationsAdmin() {
+  const { topbarUser } = useAuth();
   const [rows, setRows] = useState([]);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
@@ -38,7 +40,7 @@ export default function ApplicationsAdmin() {
       <Topbar
         eyebrow="Admin" title="Applications" subtitle="System-wide view of every application in the pipeline."
         notifCount={2} msgCount={0}
-        user={{ name: "Admin User", role: "Super Administrator", initials: "AU", color: "var(--role-admin)" }}
+        user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
         actions={<button className="btn btn-outline btn-sm" title="CSV export isn't built yet"><Download size={14} /> Export CSV</button>}
       />
       <div className="page">

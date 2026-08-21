@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { Plus, X } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -12,6 +13,7 @@ function authHeaders() {
 
 export default function PostOpportunity() {
   const navigate = useNavigate();
+  const { topbarUser } = useAuth();
   const [reqs, setReqs] = useState(["Matric with Mathematics"]);
   const [tags, setTags] = useState([]);
 
@@ -89,7 +91,7 @@ export default function PostOpportunity() {
       <Topbar
         eyebrow="Provider" title="Post New Opportunity" subtitle="This listing will be sent to an admin for approval before it goes live."
         notifCount={3} msgCount={4}
-        user={{ name: "Thabo Ndlovu", role: "Tech Solutions SA", initials: "TN", color: "var(--sun-deep)" }}
+        user={topbarUser || { name: "Provider", role: "Provider", initials: "?", color: "var(--sun-deep)" }}
       />
       <div className="page">
         {error && (

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import Topbar from "../../components/Topbar";
 import { Plus, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export default function NQFManagement() {
+  const { topbarUser } = useAuth();
   const [tab, setTab] = useState("levels");
   const [nqfLevels, setNqfLevels] = useState([]);
   const [qualifications, setQualifications] = useState([]);
@@ -30,7 +32,7 @@ export default function NQFManagement() {
       <Topbar
         eyebrow="Admin" title="NQF Management" subtitle="Reference data sourced from SAQA — never hardcoded in the app."
         notifCount={2} msgCount={0}
-        user={{ name: "Admin User", role: "Super Administrator", initials: "AU", color: "var(--role-admin)" }}
+        user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
       />
       <div className="page">
         <div className="card" style={{ marginBottom: 20, background: "#eeeaf6", border: "none", display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>

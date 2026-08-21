@@ -1,11 +1,13 @@
 import { useState } from "react";
 import Topbar from "../../components/Topbar";
 import { Search, Download } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 /* No audit-log backend endpoint exists yet — page shows an empty state
    until the feature is implemented. */
 
 export default function AuditLogs() {
+  const { topbarUser } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
@@ -13,7 +15,7 @@ export default function AuditLogs() {
       <Topbar
         eyebrow="Admin" title="Audit Logs" subtitle="Every significant action taken across the platform."
         notifCount={2} msgCount={0}
-        user={{ name: "Admin User", role: "Super Administrator", initials: "AU", color: "var(--role-admin)" }}
+        user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
         actions={<button className="btn btn-outline btn-sm"><Download size={14} /> Export CSV</button>}
       />
       <div className="page">
