@@ -1,16 +1,18 @@
 import { useState } from "react";
 import Topbar from "../../components/Topbar";
+import { useAuth } from "../../context/AuthContext";
 
 const tabs = ["General", "Email", "Roles & Permissions", "Integrations"];
 
 export default function SystemSettings() {
+  const { topbarUser } = useAuth();
   const [tab, setTab] = useState(tabs[0]);
   return (
     <>
       <Topbar
         eyebrow="Admin" title="System Settings" subtitle="Platform-wide configuration."
         notifCount={2} msgCount={0}
-        user={{ name: "Admin User", role: "Super Administrator", initials: "AU", color: "var(--role-admin)" }}
+        user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
       />
       <div className="page">
         <div className="tabs">

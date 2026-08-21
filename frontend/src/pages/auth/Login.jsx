@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sprout, Quote } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 // Falls back to localhost for local dev; set VITE_API_URL in frontend/.env for other environments.
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -10,6 +11,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -38,6 +40,10 @@ export default function Login() {
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
       localStorage.setItem("user", JSON.stringify(user));
+
+      // Sync AuthContext state in the current tab (storage event only
+      // fires in *other* tabs, so we need an explicit refresh here).
+      await refreshUser();
 
       // Route by the account's actual role from the server, not the
       // (cosmetic) tab the person happened to have selected.

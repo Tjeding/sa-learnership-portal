@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Sprout, CheckCircle2 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 // Falls back to localhost for local dev; set VITE_API_URL in frontend/.env for other environments.
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -11,6 +12,7 @@ export default function Register() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -62,6 +64,9 @@ export default function Register() {
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
       localStorage.setItem("user", JSON.stringify(user));
+
+      // Sync AuthContext state in the current tab
+      await refreshUser();
 
       navigate(`/${user.role}`);
     } catch (err) {

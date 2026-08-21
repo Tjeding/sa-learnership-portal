@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import Topbar from "../../components/Topbar";
 import { Plus, X } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export default function ContentManagement() {
+  const { topbarUser } = useAuth();
   const [tab, setTab] = useState("skills");
   const [skills, setSkills] = useState([]);
   const [sectors, setSectors] = useState([]);
@@ -25,7 +27,7 @@ export default function ContentManagement() {
       <Topbar
         eyebrow="Admin" title="Content Management" subtitle="Manage the skills taxonomy, sectors, and static site content."
         notifCount={2} msgCount={0}
-        user={{ name: "Admin User", role: "Super Administrator", initials: "AU", color: "var(--role-admin)" }}
+        user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
       />
       <div className="page">
         <div className="tabs">
