@@ -1,25 +1,62 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Topbar from "../../components/Topbar";
-import { StatCard, StatusBadge, ProgressRing, Donut } from "../../components/Widgets";
-import { FileText, Star, Award, Clock, ChevronRight, Sparkles } from "lucide-react";
-import { myApplications, recommended, currentApplicant, opportunities } from "../../data/mockData";
+import { StatCard, StatusBadge, Donut } from "../../components/Widgets";
+import { FileText, Star, Award, ChevronRight, Sparkles, Clock } from "lucide-react";
+import { currentApplicant } from "../../data/mockData";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+function authHeaders() {
+  const token = localStorage.getItem("accessToken");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 export default function ApplicantDashboard() {
-  const counts = {
-    total: myApplications.length,
-    shortlisted: myApplications.filter((a) => a.status === "shortlisted").length,
-    offered: myApplications.filter((a) => a.status === "offered" || a.status === "accepted").length,
-  };
-  const statusCounts = ["submitted", "under_review", "shortlisted", "rejected"].map((s) => ({
-    label: s, value: myApplications.filter((a) => a.status === s).length,
-  }));
+  const navigate = useNavigate();
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_URL}/api/v1/applicant/dashboard`, { headers: authHeaders() })
+      .then((res) => {
+        if (res.status === 401) { navigate("/login"); return null; }
+        return res.json();
+      })
+      .then((body) => {
+        if (cancelled || !body) return;
+        if (!body.success) throw new Error(body?.error?.message || "Failed to load dashboard.");
+        setData(body.data);
+      })
+      .catch((err) => !cancelled && setError(err.message));
+    return () => { cancelled = true; };
+  }, [navigate]);
+
+  if (error) {
+    return (
+      <>
+        <Topbar eyebrow="Applicant" title="Dashboard" notifCount={0} msgCount={0}
+          user={{ name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" }} />
+        <div className="page"><div style={{ background: "#fdecea", color: "#a32424", padding: "12px 16px", borderRadius: 8 }}>{error}</div></div>
+      </>
+    );
+  }
+
+  if (!data) {
+    return (
+      <>
+        <Topbar eyebrow="Applicant" title="Dashboard" subtitle="Loading…" notifCount={0} msgCount={0}
+          user={{ name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" }} />
+        <div className="page"><p className="text-sm text-stone">Loading…</p></div>
+      </>
+    );
+  }
+
   const donutSegs = [
-    { label: "Received", value: statusCounts[0].value || 1, color: "var(--teal)" },
-    { label: "In Review", value: statusCounts[1].value || 0.001, color: "var(--sun)" },
-    { label: "Shortlisted", value: statusCounts[2].value || 0.001, color: "var(--veld)" },
-    { label: "Rejected", value: statusCounts[3].value || 0.001, color: "var(--rust)" },
+    { label: "Total", value: data.totalApplications || 0.001, color: "var(--teal)" },
+    { label: "Shortlisted", value: data.shortlistedCount || 0.001, color: "var(--veld)" },
+    { label: "Offers", value: data.offersCount || 0.001, color: "var(--sun)" },
   ];
-  const closingSoon = opportunities.filter((o) => o.status === "approved").slice(0, 2);
 
   return (
     <>
@@ -31,17 +68,10 @@ export default function ApplicantDashboard() {
         user={{ name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" }}
       />
       <div className="page">
-        <div className="grid grid-4" style={{ marginBottom: "var(--sp-5)" }}>
-          <StatCard icon={FileText} label="Applications" value={counts.total} foot="3 in progress" tint="teal" />
-          <StatCard icon={Star} label="Shortlisted" value={counts.shortlisted} foot="View details" tint="sun" />
-          <StatCard icon={Award} label="Offers" value={counts.offered || 1} foot="Congratulations!" footUp tint="veld" />
-          <div className="stat-card" style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-            <ProgressRing value={currentApplicant.profileStrength} size={64} stroke={7} />
-            <div>
-              <div className="stat-label">Profile Strength</div>
-              <div style={{ fontWeight: 700, fontSize: 15, marginTop: 4 }}>Excellent</div>
-            </div>
-          </div>
+        <div className="grid grid-3" style={{ marginBottom: "var(--sp-5)" }}>
+          <StatCard icon={FileText} label="Applications" value={data.totalApplications} tint="teal" />
+          <StatCard icon={Star} label="Shortlisted" value={data.shortlistedCount} tint="sun" />
+          <StatCard icon={Award} label="Offers" value={data.offersCount} footUp tint="veld" />
         </div>
 
         <div className="grid grid-2-1">
@@ -51,18 +81,19 @@ export default function ApplicantDashboard() {
               <Link to="/applicant/applications" className="card-link">View All</Link>
             </div>
             <div className="list-plain">
-              {myApplications.map((a) => (
+              {data.recentApplications.map((a) => (
                 <div key={a.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--line-soft)" }}>
                   <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                     <div className="stat-icon" style={{ background: "var(--veld-tint)", color: "var(--veld-deep)" }}><FileText size={16} /></div>
                     <div>
-                      <div className="cell-primary">{a.title}</div>
-                      <div className="cell-sub">{a.org} · Updated {timeAgo(a.updatedAt)}</div>
+                      <div className="cell-primary">{a.opportunityTitle}</div>
+                      <div className="cell-sub">{a.providerName} · Updated {timeAgo(a.updatedAt)}</div>
                     </div>
                   </div>
                   <StatusBadge status={a.status} />
                 </div>
               ))}
+              {data.recentApplications.length === 0 && <p className="text-sm text-stone" style={{ padding: "10px 0" }}>No applications yet.</p>}
             </div>
           </div>
 
@@ -72,12 +103,13 @@ export default function ApplicantDashboard() {
               <Sparkles size={16} color="var(--sun-deep)" />
             </div>
             <div className="list-plain">
-              {recommended.map((r) => (
-                <Link to="/applicant/recommended" key={r.id} style={{ display: "block", padding: "10px 0", borderBottom: "1px solid var(--line-soft)" }}>
-                  <div className="cell-primary" style={{ fontSize: 13.5 }}>{r.title}</div>
-                  <div className="cell-sub">{r.org} · Match: {r.match}% · NQF Level {r.nqf}</div>
+              {data.recommendations.slice(0, 5).map((r) => (
+                <Link to="/applicant/recommended" key={r.opportunityId} style={{ display: "block", padding: "10px 0", borderBottom: "1px solid var(--line-soft)" }}>
+                  <div className="cell-primary" style={{ fontSize: 13.5 }}>{r.opportunityTitle}</div>
+                  <div className="cell-sub">Match: {r.matchPercentage}% {r.meetsNqfRequirement ? "· NQF requirement met" : ""}</div>
                 </Link>
               ))}
+              {data.recommendations.length === 0 && <p className="text-sm text-stone" style={{ padding: "10px 0" }}>No recommendations yet — tag some skills on your profile.</p>}
             </div>
             <Link to="/applicant/recommended" className="card-link" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 12 }}>
               View All Recommendations <ChevronRight size={14} />
@@ -91,12 +123,7 @@ export default function ApplicantDashboard() {
             <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
               <Donut segments={donutSegs} size={130} stroke={20} />
               <div style={{ flex: 1 }}>
-                {[
-                  ["Received", donutSegs[0].value, "var(--teal)"],
-                  ["In Review", statusCounts[1].value, "var(--sun)"],
-                  ["Shortlisted", statusCounts[2].value, "var(--veld)"],
-                  ["Rejected", statusCounts[3].value, "var(--rust)"],
-                ].map(([label, val, color]) => (
+                {[["Total", data.totalApplications, "var(--teal)"], ["Shortlisted", data.shortlistedCount, "var(--veld)"], ["Offers", data.offersCount, "var(--sun)"]].map(([label, val, color]) => (
                   <div className="legend-row" key={label}>
                     <span className="legend-swatch" style={{ background: color }} />
                     {label} <span className="legend-val">{val}</span>
@@ -112,7 +139,7 @@ export default function ApplicantDashboard() {
               <Link to="/applicant/opportunities" className="card-link">View All</Link>
             </div>
             <div className="list-plain">
-              {closingSoon.map((o) => (
+              {data.closingSoon.map((o) => (
                 <div key={o.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--line-soft)" }}>
                   <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                     <div className="stat-icon" style={{ background: "var(--rust-tint)", color: "var(--rust)" }}><Clock size={16} /></div>
@@ -124,6 +151,7 @@ export default function ApplicantDashboard() {
                   <span className="badge badge-rust">{daysLeft(o.closingDate)} days left</span>
                 </div>
               ))}
+              {data.closingSoon.length === 0 && <p className="text-sm text-stone" style={{ padding: "10px 0" }}>Nothing closing soon.</p>}
             </div>
           </div>
         </div>
