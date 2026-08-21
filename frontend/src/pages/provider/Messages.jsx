@@ -4,8 +4,9 @@ export default function Messages() {
   return (
     <MessagesView
       topbarProps={{
-        eyebrow: "Provider", notifCount: 3, msgCount: 4,
-        user: { name: "Thabo Ndlovu", role: "Tech Solutions SA", initials: "TN", color: "var(--sun-deep)" },
+        eyebrow: "Provider", notifCount: 0, msgCount: 0,
+        notifTo: "/provider/notifications", msgTo: "/provider/messages",
+        user: { name: "Provider", role: "Provider", initials: "PR", color: "var(--sun-deep)" },
       }}
     />
   );
