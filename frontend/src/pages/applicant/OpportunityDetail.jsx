@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { MapPin, Clock, Wallet, Building2, CheckCircle2, Bookmark, ArrowLeft } from "lucide-react";
-import { currentApplicant } from "../../data/mockData";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -13,6 +13,7 @@ export default function OpportunityDetail() {
   const [applied, setApplied] = useState(false);
   const [applying, setApplying] = useState(false);
   const [applyError, setApplyError] = useState("");
+  const { topbarUser } = useAuth();
 
   async function handleApply() {
     setApplying(true);
@@ -50,7 +51,7 @@ export default function OpportunityDetail() {
     return (
       <>
         <Topbar eyebrow="Applicant" title="Opportunity Details" notifCount={3} msgCount={2}
-          user={{ name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" }} />
+          user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }} />
         <div className="page">
           <div style={{ background: "#fdecea", color: "#a32424", padding: "12px 16px", borderRadius: 8 }}>{error}</div>
         </div>
@@ -62,7 +63,7 @@ export default function OpportunityDetail() {
     return (
       <>
         <Topbar eyebrow="Applicant" title="Opportunity Details" subtitle="Loading…" notifCount={3} msgCount={2}
-          user={{ name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" }} />
+          user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }} />
         <div className="page"><p className="text-sm text-stone">Loading…</p></div>
       </>
     );
@@ -71,7 +72,7 @@ export default function OpportunityDetail() {
   return (
     <>
       <Topbar eyebrow="Applicant" title="Opportunity Details" notifCount={3} msgCount={2}
-        user={{ name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" }} />
+        user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }} />
       <div className="page">
         <Link to="/applicant/opportunities" className="btn btn-ghost btn-sm" style={{ marginBottom: 16 }}>
           <ArrowLeft size={15} /> Back to opportunities

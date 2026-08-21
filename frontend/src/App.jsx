@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 
 import Landing from "./pages/public/Landing";
 import OpportunitiesPreview from "./pages/public/OpportunitiesPreview";
@@ -43,8 +44,9 @@ import AuditLogs from "./pages/admin/AuditLogs";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
         {/* Public site */}
         <Route path="/" element={<Landing />} />
         <Route path="/opportunities-preview" element={<OpportunitiesPreview />} />
@@ -95,7 +97,8 @@ export default function App() {
 
         {/* Fallback */}
         <Route path="*" element={<Landing />} />
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }

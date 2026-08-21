@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PublicNav from "../../components/PublicNav";
 import { Pathway } from "../../components/Widgets";
@@ -5,10 +6,38 @@ import {
   GraduationCap, Building2, ShieldCheck, ArrowRight, MapPin, Clock, Wallet,
   Sparkles, BellRing, LineChart,
 } from "lucide-react";
-import { opportunities } from "../../data/mockData";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export default function Landing() {
-  const featured = opportunities.filter((o) => o.status === "approved").slice(0, 3);
+  const [featured, setFeatured] = useState([]);
+  const [stats, setStats] = useState({ providers: 0, opportunities: 0, placements: 0 });
+
+  useEffect(() => {
+    /* Fetch approved opportunities for the featured section */
+    fetch(`${API_URL}/api/v1/opportunities`)
+      .then((r) => r.json())
+      .then((body) => {
+        if (body.success && Array.isArray(body.data)) {
+          setFeatured(body.data.filter((o) => o.status === "approved").slice(0, 3));
+        }
+      })
+      .catch(() => {});
+
+    /* Fetch dashboard stats from admin endpoint (public-ish summary) */
+    fetch(`${API_URL}/api/v1/admin/dashboard`)
+      .then((r) => r.json())
+      .then((body) => {
+        if (body.success && body.data) {
+          setStats({
+            providers: body.data.totalProviders ?? 0,
+            opportunities: body.data.activeOpportunities ?? 0,
+            placements: body.data.placementsMade ?? 0,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div>
@@ -32,9 +61,9 @@ export default function Landing() {
             </Link>
           </div>
           <div className="hero-stats">
-            <div className="hero-stat"><div className="num">1,024</div><div className="lbl">Registered providers</div></div>
-            <div className="hero-stat"><div className="num">623</div><div className="lbl">Open opportunities</div></div>
-            <div className="hero-stat"><div className="num">1,256</div><div className="lbl">Placements this year</div></div>
+            <div className="hero-stat"><div className="num">{stats.providers.toLocaleString()}</div><div className="lbl">Registered providers</div></div>
+            <div className="hero-stat"><div className="num">{stats.opportunities.toLocaleString()}</div><div className="lbl">Open opportunities</div></div>
+            <div className="hero-stat"><div className="num">{stats.placements.toLocaleString()}</div><div className="lbl">Placements this year</div></div>
           </div>
         </div>
 
@@ -118,18 +147,21 @@ export default function Landing() {
             <Link to="/opportunities-preview" key={o.id} className="opp-card">
               <div className="opp-card-top">
                 <div>
-                  <span className="badge badge-sun" style={{ marginBottom: 8 }}>{o.type}</span>
+                  <span className="badge badge-sun" style={{ marginBottom: 8 }}>{o.opportunityType}</span>
                   <h4>{o.title}</h4>
                 </div>
               </div>
-              <p className="text-sm text-stone">{o.provider} · {o.sector}</p>
+              <p className="text-sm text-stone">{o.providerName} · {o.sectorName}</p>
               <div className="opp-meta">
                 <span><MapPin size={13} /> {o.location}</span>
-                <span><Clock size={13} /> {o.duration} months</span>
-                <span><Wallet size={13} /> R{o.stipend.toLocaleString()}/mo</span>
+                <span><Clock size={13} /> {o.durationMonths} months</span>
+                <span><Wallet size={13} /> {o.stipendAmount ? `R${Number(o.stipendAmount).toLocaleString()}/mo` : "Unpaid"}</span>
               </div>
             </Link>
           ))}
+          {featured.length === 0 && (
+            <p className="text-sm text-stone" style={{ gridColumn: "1 / -1" }}>No featured opportunities right now.</p>
+          )}
         </div>
       </section>
 

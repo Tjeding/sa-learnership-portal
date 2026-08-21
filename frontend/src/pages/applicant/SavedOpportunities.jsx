@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { MapPin, Clock, Wallet, Bookmark } from "lucide-react";
-import { currentApplicant } from "../../data/mockData";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 function authHeaders() {
@@ -12,6 +12,7 @@ function authHeaders() {
 
 export default function SavedOpportunities() {
   const navigate = useNavigate();
+  const { topbarUser } = useAuth();
   const [saved, setSaved] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -50,7 +51,7 @@ export default function SavedOpportunities() {
       <Topbar
         eyebrow="Applicant" title="Saved Opportunities" subtitle="Listings you've bookmarked to apply to later."
         notifCount={3} msgCount={2}
-        user={{ name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" }}
+        user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }}
       />
       <div className="page">
         {error && <div style={{ background: "#fdecea", color: "#a32424", padding: "10px 14px", borderRadius: 8, fontSize: 13.5, marginBottom: 16 }}>{error}</div>}
