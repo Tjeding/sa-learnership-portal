@@ -72,6 +72,7 @@ public class SecurityConfig {
                         // remaining feature (opportunities, applications, etc.) is built.
                         .requestMatchers("/api/v1/auth/me").authenticated()
                         .requestMatchers("/api/v1/notifications/**").authenticated()
+                        .requestMatchers("/api/v1/messages/**").authenticated()
                         .requestMatchers("/api/v1/applicant/**").hasRole("APPLICANT")
                         .anyRequest().permitAll()
                 )
