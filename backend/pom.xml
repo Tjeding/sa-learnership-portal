@@ -110,6 +110,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- PDF export (OpenPDF — LGPL fork of iText 5) -->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>2.0.3</version>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
