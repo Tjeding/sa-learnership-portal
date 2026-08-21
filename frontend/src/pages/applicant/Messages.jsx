@@ -5,7 +5,8 @@ export default function Messages() {
   return (
     <MessagesView
       topbarProps={{
-        eyebrow: "Applicant", notifCount: 3, msgCount: 2,
+        eyebrow: "Applicant", notifCount: 0, msgCount: 0,
+        notifTo: "/applicant/notifications", msgTo: "/applicant/messages",
         user: { name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" },
       }}
     />

@@ -48,6 +48,15 @@ app:
     upload-dir: ${UPLOAD_DIR:./uploads}
     max-cv-size-bytes: ${MAX_CV_SIZE_BYTES:5242880}        # 5MB
     max-image-size-bytes: ${MAX_IMAGE_SIZE_BYTES:2097152}  # 2MB
+  matching:
+    strategy: ${MATCHING_STRATEGY:skill-based}              # skill-based | embedding | openai | ollama
+    openai:
+      api-url: ${OPENAI_API_URL:https://api.openai.com/v1/chat/completions}
+      api-key: ${OPENAI_API_KEY:}
+      model: ${OPENAI_MODEL:gpt-4o-mini}
+    ollama:
+      api-url: ${OLLAMA_API_URL:http://localhost:11434/api/generate}
+      model: ${OLLAMA_MODEL:nomic-embed-text}
 
 springdoc:
   api-docs:
