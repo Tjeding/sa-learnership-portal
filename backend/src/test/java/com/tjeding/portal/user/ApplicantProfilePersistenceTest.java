@@ -2,18 +2,38 @@ package com.tjeding.portal.user;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest(properties = {
-        "spring.flyway.locations=classpath:db/migration-h2-test",
+/**
+ * Verifies the shared-primary-key mapping between ApplicantProfile and User against
+ * the real PostgreSQL schema (Flyway migrations in db/migration). We use
+ * Testcontainers instead of embedded H2 because several entities rely on
+ * PostgreSQL-native enum columns (@JdbcTypeCode(NAMED_ENUM)) which H2 cannot
+ * map, causing a ClassCastException on insert under H2.
+ */
+@DataJpaTest
+@Testcontainers
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ActiveProfiles("test")
+@TestPropertySource(properties = {
+        "spring.flyway.locations=classpath:db/migration",
         "spring.jpa.hibernate.ddl-auto=none"
 })
-@ActiveProfiles("test")
 class ApplicantProfilePersistenceTest {
+
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
     @Autowired
     private TestEntityManager entityManager;
