@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { StatusBadge } from "../../components/Widgets";
 import { Plus, Pencil, Eye, Trash2 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -13,6 +14,7 @@ function authHeaders() {
 
 export default function MyOpportunities() {
   const navigate = useNavigate();
+  const { topbarUser } = useAuth();
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -51,7 +53,7 @@ export default function MyOpportunities() {
       <Topbar
         eyebrow="Provider" title="My Opportunities" subtitle="Manage every listing you've posted."
         notifCount={3} msgCount={4}
-        user={{ name: "Thabo Ndlovu", role: "Tech Solutions SA", initials: "TN", color: "var(--sun-deep)" }}
+        user={topbarUser || { name: "Provider", role: "Provider", initials: "?", color: "var(--sun-deep)" }}
         actions={<Link to="/provider/opportunities/new" className="btn btn-gold btn-sm"><Plus size={14} /> Post New Opportunity</Link>}
       />
       <div className="page">

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Topbar from "../../components/Topbar";
 import { StatusBadge } from "../../components/Widgets";
 import { Search, ShieldCheck, Ban, Eye } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -11,6 +12,7 @@ function authHeaders() {
 }
 
 export default function UserManagement() {
+  const { topbarUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -41,7 +43,7 @@ export default function UserManagement() {
       <Topbar
         eyebrow="Admin" title="User Management" subtitle="Manage applicants, providers and administrators."
         notifCount={2} msgCount={0}
-        user={{ name: "Admin User", role: "Super Administrator", initials: "AU", color: "var(--role-admin)" }}
+        user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
       />
       <div className="page">
         {error && <div style={{ background: "#fdecea", color: "#a32424", padding: "10px 14px", borderRadius: 8, fontSize: 13.5, marginBottom: 16 }}>{error}</div>}

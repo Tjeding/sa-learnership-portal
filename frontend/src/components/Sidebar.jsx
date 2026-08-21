@@ -1,5 +1,6 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Sprout, LogOut } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const roleMeta = {
   applicant: { color: "var(--role-applicant)", label: "Applicant Portal" },
@@ -9,6 +10,15 @@ const roleMeta = {
 
 export default function Sidebar({ role, sections }) {
   const meta = roleMeta[role];
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  async function handleLogout(e) {
+    e.preventDefault();
+    await logout();
+    navigate("/");
+  }
+
   return (
     <aside className="sidebar" style={{ "--role-color": meta.color }}>
       <div className="sidebar-brand">
@@ -42,10 +52,10 @@ export default function Sidebar({ role, sections }) {
       </nav>
 
       <div className="sidebar-footer">
-        <NavLink to="/" className="sidebar-link">
+        <button className="sidebar-link" onClick={handleLogout} style={{ background: "none", border: "none", cursor: "pointer", width: "100%", textAlign: "left", font: "inherit", color: "inherit" }}>
           <LogOut size={17} strokeWidth={2} />
           <span>Log out</span>
-        </NavLink>
+        </button>
       </div>
     </aside>
   );

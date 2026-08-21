@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { Mail, FileText, Send } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -12,6 +13,7 @@ function authHeaders() {
 
 export default function ShortlistedCandidates() {
   const navigate = useNavigate();
+  const { topbarUser } = useAuth();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -52,7 +54,7 @@ export default function ShortlistedCandidates() {
       <Topbar
         eyebrow="Provider" title="Shortlisted Candidates" subtitle="Applicants you've moved forward for interviews or offers."
         notifCount={3} msgCount={4}
-        user={{ name: "Thabo Ndlovu", role: "Tech Solutions SA", initials: "TN", color: "var(--sun-deep)" }}
+        user={topbarUser || { name: "Provider", role: "Provider", initials: "?", color: "var(--sun-deep)" }}
       />
       <div className="page">
         {error && (
