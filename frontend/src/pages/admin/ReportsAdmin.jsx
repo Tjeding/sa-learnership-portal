@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import Topbar from "../../components/Topbar";
 import { MiniBarChart, HBar, Donut } from "../../components/Widgets";
 import { Download, FileDown, Save } from "lucide-react";
-import { sectors } from "../../data/mockData";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 function authHeaders() {
@@ -36,12 +35,23 @@ export default function ReportsAdmin() {
     fromDate: "", toDate: "", sector: "", opportunityType: "", groupBy: "month",
   });
 
+  /* Sectors for the custom view filter dropdown */
+  const [sectors, setSectors] = useState([]);
+
   /* ── Fetch helpers ──────────────────────────────────────────── */
   const fetchJson = useCallback(async (path) => {
     const res = await fetch(`${API_URL}${path}`, { headers: authHeaders() });
     const body = await res.json();
     if (!body.success) throw new Error(body?.error?.message || "Request failed");
     return body.data;
+  }, []);
+
+  /* Load sectors on mount for the custom-view filter */
+  useEffect(() => {
+    fetch(`${API_URL}/api/v1/reference/sectors`)
+      .then((r) => r.json())
+      .then((body) => { if (body.success) setSectors(body.data); })
+      .catch(() => {});
   }, []);
 
   /* Load the tab-specific data */
@@ -248,7 +258,7 @@ export default function ReportsAdmin() {
                   <select className="input" value={filters.sector}
                     onChange={(e) => setFilters({ ...filters, sector: e.target.value })}>
                     <option value="">All sectors</option>
-                    {sectors.map((s) => <option key={s} value={s}>{s}</option>)}
+                    {sectors.map((s) => <option key={s.id} value={s.name}>{s.name}</option>)}
                   </select>
                 </div>
                 <div className="field">

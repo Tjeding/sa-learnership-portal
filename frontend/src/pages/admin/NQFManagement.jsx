@@ -1,23 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Topbar from "../../components/Topbar";
 import { Plus, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
-import { nqfLevels } from "../../data/mockData";
 
-const suggestions = [
-  { id: 1, title: "Renewable Energy Technician Learnership", nqf: 4, submittedBy: "PowerGrid Training Centre", url: "https://allqs.saqa.org.za/search.php" },
-  { id: 2, title: "Occupational Certificate: Marine Diesel Mechanic", nqf: 4, submittedBy: "Ocean Skills Academy", url: "https://allqs.saqa.org.za/search.php" },
-];
-
-const quals = [
-  { title: "National Senior Certificate (Matric)", nqf: 4, category: "School Leaving" },
-  { title: "Learnership Certificate - Level 4", nqf: 4, category: "Learnership" },
-  { title: "National Diploma", nqf: 6, category: "Diploma" },
-  { title: "Bachelor's Degree", nqf: 7, category: "Degree" },
-  { title: "Honours Degree", nqf: 8, category: "Degree" },
-];
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export default function NQFManagement() {
   const [tab, setTab] = useState("levels");
+  const [nqfLevels, setNqfLevels] = useState([]);
+  const [qualifications, setQualifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API_URL}/api/v1/reference/nqf-levels`).then((r) => r.json()),
+      fetch(`${API_URL}/api/v1/reference/qualifications`).then((r) => r.json()),
+    ]).then(([levels, quals]) => {
+      if (levels.success) setNqfLevels(levels.data);
+      if (quals.success) setQualifications(quals.data);
+    }).finally(() => setLoading(false));
+  }, []);
+
+  const suggestions = [
+    { id: 1, title: "Renewable Energy Technician Learnership", nqf: 4, submittedBy: "PowerGrid Training Centre", url: "https://allqs.saqa.org.za/search.php" },
+    { id: 2, title: "Occupational Certificate: Marine Diesel Mechanic", nqf: 4, submittedBy: "Ocean Skills Academy", url: "https://allqs.saqa.org.za/search.php" },
+  ];
 
   return (
     <>
@@ -42,16 +48,19 @@ export default function NQFManagement() {
 
         {tab === "levels" && (
           <div className="card">
-            <div className="table-wrap">
-              <table className="data-table">
-                <thead><tr><th>Level</th><th>Sub-framework</th><th>Typical example</th></tr></thead>
-                <tbody>
-                  {nqfLevels.map((n) => (
-                    <tr key={n.id}><td className="cell-primary">{n.name}</td><td>{n.framework}</td><td>{n.example}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {loading ? <p className="text-sm text-stone">Loading…</p> : (
+              <div className="table-wrap">
+                <table className="data-table">
+                  <thead><tr><th>Level</th><th>Sub-framework</th><th>Typical example</th></tr></thead>
+                  <tbody>
+                    {nqfLevels.map((n) => (
+                      <tr key={n.id}><td className="cell-primary">{n.levelName}</td><td>{n.subFramework}</td><td>{n.typicalExample}</td></tr>
+                    ))}
+                    {nqfLevels.length === 0 && <tr><td colSpan={3} className="text-sm text-stone">No NQF levels loaded.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
@@ -61,21 +70,24 @@ export default function NQFManagement() {
               <span className="card-title">Registered qualification types</span>
               <button className="btn btn-outline btn-sm"><Plus size={14} /> Add type</button>
             </div>
-            <div className="table-wrap">
-              <table className="data-table">
-                <thead><tr><th>Title</th><th>NQF Level</th><th>Category</th><th></th></tr></thead>
-                <tbody>
-                  {quals.map((q) => (
-                    <tr key={q.title}>
-                      <td className="cell-primary">{q.title}</td>
-                      <td>Level {q.nqf}</td>
-                      <td>{q.category}</td>
-                      <td><span className="badge badge-veld">Active</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {loading ? <p className="text-sm text-stone">Loading…</p> : (
+              <div className="table-wrap">
+                <table className="data-table">
+                  <thead><tr><th>Title</th><th>NQF Level</th><th>Category</th><th></th></tr></thead>
+                  <tbody>
+                    {qualifications.map((q) => (
+                      <tr key={q.id}>
+                        <td className="cell-primary">{q.title}</td>
+                        <td>{q.nqfLevelName || `Level ${q.nqfLevelId}`}</td>
+                        <td>{q.qualificationCategory}</td>
+                        <td><span className="badge badge-veld">Active</span></td>
+                      </tr>
+                    ))}
+                    {qualifications.length === 0 && <tr><td colSpan={4} className="text-sm text-stone">No qualification types loaded.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 

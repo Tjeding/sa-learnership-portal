@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { StatusBadge, Pathway } from "../../components/Widgets";
 import { FileText } from "lucide-react";
-import { currentApplicant } from "../../data/mockData";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 const tabs = ["all", "submitted", "under_review", "shortlisted", "rejected"];
@@ -17,6 +17,7 @@ function authHeaders() {
 
 export default function MyApplications() {
   const navigate = useNavigate();
+  const { topbarUser } = useAuth();
   const [tab, setTab] = useState("all");
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +60,7 @@ export default function MyApplications() {
       <Topbar
         eyebrow="Applicant" title="My Applications" subtitle="Track every application from submission to outcome."
         notifCount={3} msgCount={2}
-        user={{ name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" }}
+        user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }}
       />
       <div className="page">
         {error && (
