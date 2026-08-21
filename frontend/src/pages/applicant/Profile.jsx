@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { ProgressRing } from "../../components/Widgets";
 import { UploadCloud, FileCheck2, ShieldCheck, Clock3, Plus, X, ImagePlus } from "lucide-react";
-import { currentApplicant, nqfLevels } from "../../data/mockData";
+import { useAuth } from "../../context/AuthContext";
 
 // Falls back to localhost for local dev; set VITE_API_URL in frontend/.env for other environments.
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -13,8 +13,17 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+// Placeholder — replace once backend exposes applicant qualifications & skills endpoints
+const PLACEHOLDER_QUALIFICATIONS = [
+  { title: "National Senior Certificate (Matric)", institution: "—", year: "—", nqf: 4, verified: true },
+];
+const PLACEHOLDER_SKILLS = [
+  { name: "Communication", level: "—" },
+];
+
 export default function Profile() {
   const navigate = useNavigate();
+  const { topbarUser } = useAuth();
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -250,7 +259,7 @@ export default function Profile() {
               </div>
               {/* Qualifications/skills management is a separate feature; showing sample data for now. */}
               <div className="list-plain">
-                {currentApplicant.qualifications.map((q) => (
+                {PLACEHOLDER_QUALIFICATIONS.map((q) => (
                   <div key={q.title} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--line-soft)" }}>
                     <div>
                       <div className="cell-primary">{q.title}</div>
@@ -275,7 +284,7 @@ export default function Profile() {
                 <button className="btn btn-outline btn-sm"><Plus size={14} /> Add skill</button>
               </div>
               <div className="chip-row">
-                {currentApplicant.skillTags.map((s) => (
+                {PLACEHOLDER_SKILLS.map((s) => (
                   <span className="chip" key={s.name} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     {s.name} · <span className="text-stone">{s.level}</span> <X size={12} style={{ cursor: "pointer" }} />
                   </span>
@@ -294,7 +303,7 @@ export default function Profile() {
                     style={{ width: 96, height: 96, borderRadius: "50%", objectFit: "cover" }}
                   />
                 ) : (
-                  <ProgressRing value={currentApplicant.profileStrength} size={110} stroke={10} />
+                  <ProgressRing value={85} size={110} stroke={10} />
                 )}
               </div>
               <div style={{ fontWeight: 700, marginTop: 12 }}>

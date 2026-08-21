@@ -1,6 +1,6 @@
 import Topbar from "../../components/Topbar";
 import { FileText, Award, UploadCloud, Download, Trash2, ShieldCheck, Clock3 } from "lucide-react";
-import { currentApplicant } from "../../data/mockData";
+import { useAuth } from "../../context/AuthContext";
 
 const docs = [
   { name: "Lindiwe_Mokoena_CV.pdf", type: "CV / Resume", size: "214 KB", date: "2026-06-02", status: "verified" },
@@ -10,12 +10,13 @@ const docs = [
 ];
 
 export default function MyDocuments() {
+  const { topbarUser } = useAuth();
   return (
     <>
       <Topbar
         eyebrow="Applicant" title="My Documents" subtitle="CV, certificates and ID documents used across your applications."
         notifCount={3} msgCount={2}
-        user={{ name: currentApplicant.name, role: "Applicant", initials: currentApplicant.initials, color: "var(--veld)" }}
+        user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }}
       />
       <div className="page">
         <div className="card" style={{ marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
