@@ -42,7 +42,6 @@ export default function UserManagement() {
     <>
       <Topbar
         eyebrow="Admin" title="User Management" subtitle="Manage applicants, providers and administrators."
-        notifCount={2} msgCount={0}
         user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
       />
       <div className="page">

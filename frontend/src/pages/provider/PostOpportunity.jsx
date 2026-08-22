@@ -90,7 +90,6 @@ export default function PostOpportunity() {
     <>
       <Topbar
         eyebrow="Provider" title="Post New Opportunity" subtitle="This listing will be sent to an admin for approval before it goes live."
-        notifCount={3} msgCount={4}
         user={topbarUser || { name: "Provider", role: "Provider", initials: "?", color: "var(--sun-deep)" }}
       />
       <div className="page">

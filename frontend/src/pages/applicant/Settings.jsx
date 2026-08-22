@@ -6,8 +6,7 @@ export default function Settings() {
   return (
     <SettingsView
       topbarProps={{
-        eyebrow: "Applicant", notifCount: 3, msgCount: 2,
-        user: topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" },
+        eyebrow: "Applicant", user: topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" },
       }}
     />
   );

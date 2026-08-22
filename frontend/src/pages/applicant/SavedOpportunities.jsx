@@ -50,7 +50,6 @@ export default function SavedOpportunities() {
     <>
       <Topbar
         eyebrow="Applicant" title="Saved Opportunities" subtitle="Listings you've bookmarked to apply to later."
-        notifCount={3} msgCount={2}
         user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }}
       />
       <div className="page">

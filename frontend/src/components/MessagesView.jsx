@@ -119,9 +119,12 @@ export default function MessagesView({ topbarProps }) {
       <Topbar {...topbarProps} title="Messages" subtitle="Conversations with providers and applicants." />
       <div className="page" style={{ paddingBottom: 0 }}>
         {error && (
-          <div style={{ background: "#fdecea", color: "#a32424", padding: "12px 16px", borderRadius: 8, marginBottom: 12 }}>
-            {error}
-            <button onClick={() => setError("")} style={{ float: "right", background: "none", border: "none", cursor: "pointer", color: "#a32424" }}>×</button>
+          <div style={{ background: "#fdecea", color: "#a32424", padding: "12px 16px", borderRadius: 8, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span>{error}</span>
+            <span>
+              <button onClick={() => { setError(""); fetchConversations(); }} style={{ background: "none", border: "1px solid #a32424", borderRadius: 4, padding: "2px 10px", cursor: "pointer", color: "#a32424", fontSize: 12, marginRight: 8 }}>Retry</button>
+              <button onClick={() => setError("")} style={{ background: "none", border: "none", cursor: "pointer", color: "#a32424", fontSize: 18, lineHeight: 1 }}>×</button>
+            </span>
           </div>
         )}
 
