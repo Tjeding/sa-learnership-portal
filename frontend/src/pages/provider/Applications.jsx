@@ -55,7 +55,6 @@ export default function Applications() {
     <>
       <Topbar
         eyebrow="Provider" title="Applications" subtitle="Review, shortlist and reject applicants across all your listings."
-        notifCount={3} msgCount={4}
         user={topbarUser || { name: "Provider", role: "Provider", initials: "?", color: "var(--sun-deep)" }}
       />
       <div className="page">

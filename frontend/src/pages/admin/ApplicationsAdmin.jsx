@@ -39,7 +39,6 @@ export default function ApplicationsAdmin() {
     <>
       <Topbar
         eyebrow="Admin" title="Applications" subtitle="System-wide view of every application in the pipeline."
-        notifCount={2} msgCount={0}
         user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
         actions={<button className="btn btn-outline btn-sm" title="CSV export isn't built yet"><Download size={14} /> Export CSV</button>}
       />

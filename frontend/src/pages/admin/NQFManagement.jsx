@@ -31,7 +31,6 @@ export default function NQFManagement() {
     <>
       <Topbar
         eyebrow="Admin" title="NQF Management" subtitle="Reference data sourced from SAQA — never hardcoded in the app."
-        notifCount={2} msgCount={0}
         user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
       />
       <div className="page">

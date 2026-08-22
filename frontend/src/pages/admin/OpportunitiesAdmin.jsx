@@ -66,7 +66,6 @@ export default function OpportunitiesAdmin() {
     <>
       <Topbar
         eyebrow="Admin" title="Opportunities" subtitle="Approve, reject or remove provider listings."
-        notifCount={2} msgCount={0}
         user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
       />
       <div className="page">

@@ -6,8 +6,7 @@ export default function Settings() {
   return (
     <SettingsView
       topbarProps={{
-        eyebrow: "Provider", notifCount: 3, msgCount: 4,
-        user: topbarUser || { name: "Provider", role: "Provider", initials: "?", color: "var(--sun-deep)" },
+        eyebrow: "Provider", user: topbarUser || { name: "Provider", role: "Provider", initials: "?", color: "var(--sun-deep)" },
       }}
       extraTabs={["Team members"]}
     />

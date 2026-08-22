@@ -35,7 +35,6 @@ export default function AdminDashboard() {
     <>
       <Topbar
         eyebrow="Admin" title={`Welcome${topbarUser ? `, ${topbarUser.name.split(" ")[0]}` : ""} 🛡️`} subtitle="System overview and management."
-        notifCount={2} msgCount={0}
         user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
       />
       <div className="page">

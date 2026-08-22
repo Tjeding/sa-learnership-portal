@@ -168,7 +168,7 @@ export default function Profile() {
   if (loading) {
     return (
       <>
-        <Topbar eyebrow="Applicant" title="My Profile" subtitle="Loading…" notifCount={0} msgCount={0}
+        <Topbar eyebrow="Applicant" title="My Profile" subtitle="Loading…"
           user={{ name: "", role: "Applicant", initials: "…", color: "var(--veld)" }} />
         <div className="page"><p className="text-sm text-stone">Loading your profile…</p></div>
       </>
@@ -178,7 +178,7 @@ export default function Profile() {
   if (!profile) {
     return (
       <>
-        <Topbar eyebrow="Applicant" title="My Profile" subtitle="Something went wrong." notifCount={0} msgCount={0}
+        <Topbar eyebrow="Applicant" title="My Profile" subtitle="Something went wrong."
           user={{ name: "", role: "Applicant", initials: "?", color: "var(--veld)" }} />
         <div className="page">
           <div style={{ background: "#fdecea", color: "#a32424", padding: "12px 16px", borderRadius: 8 }}>
@@ -195,7 +195,6 @@ export default function Profile() {
     <>
       <Topbar
         eyebrow="Applicant" title="My Profile" subtitle="Keep this up to date to improve your match scores."
-        notifCount={3} msgCount={2}
         user={{ name: `${profile.firstName} ${profile.lastName}`, role: "Applicant", initials, color: "var(--veld)" }}
       />
       <div className="page">

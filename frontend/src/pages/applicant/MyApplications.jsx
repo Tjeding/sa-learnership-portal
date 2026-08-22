@@ -59,7 +59,6 @@ export default function MyApplications() {
     <>
       <Topbar
         eyebrow="Applicant" title="My Applications" subtitle="Track every application from submission to outcome."
-        notifCount={3} msgCount={2}
         user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }}
       />
       <div className="page">

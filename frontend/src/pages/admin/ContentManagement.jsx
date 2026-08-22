@@ -26,7 +26,6 @@ export default function ContentManagement() {
     <>
       <Topbar
         eyebrow="Admin" title="Content Management" subtitle="Manage the skills taxonomy, sectors, and static site content."
-        notifCount={2} msgCount={0}
         user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
       />
       <div className="page">

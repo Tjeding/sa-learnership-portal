@@ -53,6 +53,14 @@ public class MessageService {
         }
     }
 
+    // ─── Unread message count ──────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public long getTotalUnreadCount(String email) {
+        User user = currentUser(email);
+        return messageRepository.countAllUnreadForUser(user.getId());
+    }
+
     // ─── List conversations ──────────────────────────────────────────
 
     @Transactional(readOnly = true)
@@ -69,11 +77,11 @@ public class MessageService {
                     c.provider_id,
                     c.opportunity_id,
                     o.title                                                     AS opportunity_title,
-                    CASE WHEN c.applicant_id = :uid
+                    CASE WHEN c.applicant_id = ?
                          THEN COALESCE(pp.organization_name, 'Provider')
                          ELSE COALESCE(ap.first_name || ' ' || ap.last_name, 'Applicant')
                     END                                                         AS recipient_name,
-                    CASE WHEN c.applicant_id = :uid
+                    CASE WHEN c.applicant_id = ?
                          THEN UPPER(SUBSTRING(COALESCE(pp.organization_name, 'P') FROM 1 FOR 1) ||
                               COALESCE(SUBSTRING(pp.organization_name FROM POSITION(' ' IN pp.organization_name) + 1 FOR 1), ''))
                          ELSE UPPER(SUBSTRING(COALESCE(ap.first_name, 'A') FROM 1 FOR 1) ||
@@ -96,10 +104,10 @@ public class MessageService {
                 LEFT JOIN (
                     SELECT m2.conversation_id, COUNT(*) AS unread_count
                     FROM messages m2
-                    WHERE m2.is_read = FALSE AND m2.sender_id <> :uid
+                    WHERE m2.is_read = FALSE AND m2.sender_id <> ?
                     GROUP BY m2.conversation_id
                 ) unread ON unread.conversation_id = c.id
-                WHERE c.applicant_id = :uid OR c.provider_id = :uid
+                WHERE c.applicant_id = ? OR c.provider_id = ?
                 ORDER BY COALESCE(last_msg.created_at, c.updated_at) DESC
                 """,
                 (rs, rn) -> new ConversationSummaryResponse(
@@ -115,7 +123,7 @@ public class MessageService {
                         rs.getObject("last_message_at", Instant.class),
                         rs.getLong("unread_count")
                 ),
-                userId);
+                userId, userId, userId, userId, userId);
     }
 
     // ─── Get messages ────────────────────────────────────────────────

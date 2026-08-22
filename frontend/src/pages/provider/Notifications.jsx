@@ -7,7 +7,6 @@ export default function Notifications() {
     <NotificationsView
       topbarProps={{
         eyebrow: "Provider",
-        msgCount: 4,
         user: topbarUser || { name: "Provider", role: "Provider", initials: "?", color: "var(--sun-deep)" },
       }}
     />

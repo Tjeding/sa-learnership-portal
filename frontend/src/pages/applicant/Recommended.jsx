@@ -50,7 +50,6 @@ export default function Recommended() {
     <>
       <Topbar
         eyebrow="Applicant" title="Recommended for You" subtitle="AI-matched opportunities based on your profile."
-        notifCount={3} msgCount={2}
         user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }}
       />
       <div className="page">

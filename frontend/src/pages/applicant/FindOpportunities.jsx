@@ -40,7 +40,6 @@ export default function FindOpportunities() {
         eyebrow="Applicant"
         title="Find Opportunities"
         subtitle={loading ? "Loading…" : `${results.length} open listings match your filters`}
-        notifCount={3} msgCount={2}
         user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }}
       />
       <div className="page">
