@@ -85,7 +85,6 @@ export default function Reports() {
     <>
       <Topbar
         eyebrow="Provider" title="Reports & Analytics" subtitle="Track your applications, placements and listing performance."
-        notifCount={3} msgCount={4}
         user={{ name: "Provider", role: "Provider", initials: "PR", color: "var(--sun-deep)" }}
         actions={
           <>

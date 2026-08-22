@@ -36,7 +36,7 @@ export default function ApplicantDashboard() {
   if (error) {
     return (
       <>
-        <Topbar eyebrow="Applicant" title="Dashboard" notifCount={0} msgCount={0}
+        <Topbar eyebrow="Applicant" title="Dashboard"
           user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }} />
         <div className="page"><div style={{ background: "#fdecea", color: "#a32424", padding: "12px 16px", borderRadius: 8 }}>{error}</div></div>
       </>
@@ -46,7 +46,7 @@ export default function ApplicantDashboard() {
   if (!data) {
     return (
       <>
-        <Topbar eyebrow="Applicant" title="Dashboard" subtitle="Loading…" notifCount={0} msgCount={0}
+        <Topbar eyebrow="Applicant" title="Dashboard" subtitle="Loading…"
           user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }} />
         <div className="page"><p className="text-sm text-stone">Loading…</p></div>
       </>
@@ -65,7 +65,6 @@ export default function ApplicantDashboard() {
         eyebrow="Applicant"
         title={`Welcome${topbarUser ? `, ${topbarUser.name.split(" ")[0]}` : ""} 👋`}
         subtitle="Let's find the right opportunity for your future."
-        notifCount={3} msgCount={2}
         user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }}
       />
       <div className="page">

@@ -7,7 +7,6 @@ export default function Notifications() {
     <NotificationsView
       topbarProps={{
         eyebrow: "Applicant",
-        msgCount: 2,
         user: topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" },
       }}
     />

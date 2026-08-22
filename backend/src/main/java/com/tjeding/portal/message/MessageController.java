@@ -27,6 +27,11 @@ public class MessageController {
 
     // ─── Conversations ───────────────────────────────────────────────
 
+    @GetMapping("/unread-count")
+    public ApiResponse<Long> getUnreadCount(Authentication authentication) {
+        return ApiResponse.success(messageService.getTotalUnreadCount(authentication.getName()));
+    }
+
     @GetMapping("/conversations")
     public ApiResponse<List<ConversationSummaryResponse>> listConversations(Authentication authentication) {
         return ApiResponse.success(messageService.getConversations(authentication.getName()));

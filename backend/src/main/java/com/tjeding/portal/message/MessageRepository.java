@@ -15,6 +15,9 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     long countByConversation_IdAndReadFalseAndSender_IdNot(
             Long conversationId, Long excludeUserId);
 
+    @Query("SELECT COUNT(m) FROM Message m WHERE m.read = false AND m.sender.id <> :excludeUserId")
+    long countAllUnreadForUser(@Param("excludeUserId") Long excludeUserId);
+
     @Modifying
     @Query("""
             UPDATE Message m SET m.read = true, m.readAt = :now

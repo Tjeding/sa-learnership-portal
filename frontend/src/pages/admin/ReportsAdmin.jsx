@@ -137,7 +137,6 @@ export default function ReportsAdmin() {
     <>
       <Topbar
         eyebrow="Admin" title="Reports & Analytics" subtitle="The 3 core dashboard reports, plus a custom view builder."
-        notifCount={2} msgCount={0}
         user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
         actions={
           reportKey[tab] ? (

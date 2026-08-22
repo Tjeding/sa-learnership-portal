@@ -46,7 +46,6 @@ export default function ProviderDashboard() {
     <>
       <Topbar
         eyebrow="Provider" title={`Welcome${topbarUser ? `, ${topbarUser.name.split(" ")[0]}` : ""} \u{1F44B}`} subtitle="Here's what's happening with your opportunities."
-        notifCount={3} msgCount={4}
         user={topbarUser || { name: "Provider", role: "Provider", initials: "?", color: "var(--sun-deep)" }}
         actions={<Link to="/provider/opportunities/new" className="btn btn-gold btn-sm"><Plus size={14} /> Post New Opportunity</Link>}
       />
