@@ -50,7 +50,7 @@ export default function OpportunityDetail() {
   if (error) {
     return (
       <>
-        <Topbar eyebrow="Applicant" title="Opportunity Details" notifCount={3} msgCount={2}
+        <Topbar eyebrow="Applicant" title="Opportunity Details"
           user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }} />
         <div className="page">
           <div style={{ background: "#fdecea", color: "#a32424", padding: "12px 16px", borderRadius: 8 }}>{error}</div>
@@ -62,7 +62,7 @@ export default function OpportunityDetail() {
   if (!opp) {
     return (
       <>
-        <Topbar eyebrow="Applicant" title="Opportunity Details" subtitle="Loading…" notifCount={3} msgCount={2}
+        <Topbar eyebrow="Applicant" title="Opportunity Details" subtitle="Loading…"
           user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }} />
         <div className="page"><p className="text-sm text-stone">Loading…</p></div>
       </>
@@ -71,7 +71,7 @@ export default function OpportunityDetail() {
 
   return (
     <>
-      <Topbar eyebrow="Applicant" title="Opportunity Details" notifCount={3} msgCount={2}
+      <Topbar eyebrow="Applicant" title="Opportunity Details"
         user={topbarUser || { name: "User", role: "Applicant", initials: "?", color: "var(--veld)" }} />
       <div className="page">
         <Link to="/applicant/opportunities" className="btn btn-ghost btn-sm" style={{ marginBottom: 16 }}>

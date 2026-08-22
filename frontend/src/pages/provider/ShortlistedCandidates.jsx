@@ -53,7 +53,6 @@ export default function ShortlistedCandidates() {
     <>
       <Topbar
         eyebrow="Provider" title="Shortlisted Candidates" subtitle="Applicants you've moved forward for interviews or offers."
-        notifCount={3} msgCount={4}
         user={topbarUser || { name: "Provider", role: "Provider", initials: "?", color: "var(--sun-deep)" }}
       />
       <div className="page">

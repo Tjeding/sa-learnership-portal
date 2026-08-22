@@ -1,7 +1,38 @@
+import { useState, useEffect } from "react";
 import { Bell, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 
-export default function Topbar({ eyebrow, title, subtitle, user, notifCount = 0, msgCount = 0, notifTo = "notifications", msgTo = "messages", actions }) {
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
+function authHeaders() {
+  const token = localStorage.getItem("accessToken");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export default function Topbar({ eyebrow, title, subtitle, user, notifTo = "notifications", msgTo = "messages", actions }) {
+  const [notifCount, setNotifCount] = useState(0);
+  const [msgCount, setMsgCount] = useState(0);
+
+  /* Fetch real unread notification count from the database */
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+    fetch(`${API_URL}/api/v1/notifications/unread-count`, { headers: authHeaders() })
+      .then((r) => r.json())
+      .then((body) => { if (body.success) setNotifCount(body.data?.unreadCount ?? 0); })
+      .catch(() => {});
+  }, []);
+
+  /* Fetch real unread message count from the database */
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+    fetch(`${API_URL}/api/v1/messages/unread-count`, { headers: authHeaders() })
+      .then((r) => r.json())
+      .then((body) => { if (body.success) setMsgCount(body.data ?? 0); })
+      .catch(() => {});
+  }, []);
+
   return (
     <header className="topbar">
       <div className="topbar-greeting">

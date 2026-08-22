@@ -11,7 +11,6 @@ export default function SystemSettings() {
     <>
       <Topbar
         eyebrow="Admin" title="System Settings" subtitle="Platform-wide configuration."
-        notifCount={2} msgCount={0}
         user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
       />
       <div className="page">

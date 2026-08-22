@@ -103,7 +103,7 @@ export default function OrganisationProfile() {
   if (loading) {
     return (
       <>
-        <Topbar eyebrow="Provider" title="Organisation Profile" subtitle="Loading…" notifCount={0} msgCount={0}
+        <Topbar eyebrow="Provider" title="Organisation Profile" subtitle="Loading…"
           user={{ name: "", role: "Provider", initials: "…", color: "var(--sun-deep)" }} />
         <div className="page"><p className="text-sm text-stone">Loading your organisation profile…</p></div>
       </>
@@ -113,7 +113,7 @@ export default function OrganisationProfile() {
   if (!org) {
     return (
       <>
-        <Topbar eyebrow="Provider" title="Organisation Profile" subtitle="Something went wrong." notifCount={0} msgCount={0}
+        <Topbar eyebrow="Provider" title="Organisation Profile" subtitle="Something went wrong."
           user={{ name: "", role: "Provider", initials: "?", color: "var(--sun-deep)" }} />
         <div className="page">
           <div style={{ background: "#fdecea", color: "#a32424", padding: "12px 16px", borderRadius: 8 }}>
@@ -131,7 +131,6 @@ export default function OrganisationProfile() {
     <>
       <Topbar
         eyebrow="Provider" title="Organisation Profile" subtitle="This information appears on all your opportunity listings."
-        notifCount={3} msgCount={4}
         user={{ name: org.contactPerson || org.organizationName, role: org.organizationName, initials, color: "var(--sun-deep)" }}
       />
       <div className="page">
