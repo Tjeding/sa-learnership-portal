@@ -9,7 +9,8 @@ import { useAuth } from "../context/AuthContext";
  *   match, redirect to the correct portal for their actual role.
  */
 export default function ProtectedRoute({ requiredRole }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return <div className="page" role="status">Opening your account...</div>;
 
   const token = localStorage.getItem("accessToken");
   if (!token || !user) {
@@ -29,7 +30,8 @@ export default function ProtectedRoute({ requiredRole }) {
  * If the user is already authenticated, redirect them to their portal.
  */
 export function PublicOnlyRoute() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return <div className="page" role="status">Opening your account...</div>;
   const token = localStorage.getItem("accessToken");
 
   if (token && user?.role) {

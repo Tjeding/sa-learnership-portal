@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "../../api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Topbar from "../../components/Topbar";
@@ -49,6 +50,19 @@ export default function Applications() {
     }
   }
 
+  async function contact(candidate) {
+    setError("");
+    try {
+      const response = await fetch(`${API_URL}/api/v1/messages/conversations`, {
+        method: "POST", headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ recipientId: candidate.applicantId, opportunityId: candidate.opportunityId }),
+      });
+      const body = await response.json();
+      if (!response.ok || !body.success) throw new Error(body.error?.message || "Unable to open conversation.");
+      navigate(`/provider/messages?conversation=${body.data.conversationId}`);
+    } catch (e) { setError(e.message); }
+  }
+
   const filtered = rows.filter((r) => r.applicantName.toLowerCase().includes(q.toLowerCase()) || r.opportunityTitle.toLowerCase().includes(q.toLowerCase()));
 
   return (
@@ -88,6 +102,7 @@ export default function Applications() {
                     <td><StatusBadge status={a.status} /></td>
                     <td>
                       <div style={{ display: "flex", gap: 6 }}>
+                        <button className="btn btn-outline btn-sm" onClick={() => contact(a)}>Message</button>
                         <button className="icon-btn" style={{ width: 30, height: 30 }} title="View CV"
                           disabled={!a.applicantCvUrl}
                           onClick={() => window.open(`${API_URL}${a.applicantCvUrl}`, "_blank")}>

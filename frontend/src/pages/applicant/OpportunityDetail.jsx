@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "../../api";
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Topbar from "../../components/Topbar";
@@ -8,12 +9,39 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export default function OpportunityDetail() {
   const { id } = useParams();
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [opp, setOpp] = useState(null);
   const [error, setError] = useState("");
   const [applied, setApplied] = useState(false);
   const [applying, setApplying] = useState(false);
   const [applyError, setApplyError] = useState("");
   const { topbarUser } = useAuth();
+
+  async function toggleSave() {
+    setSaving(true); setApplyError("");
+    try {
+      const res = await fetch(`${API_URL}/api/v1/applicant/saved-opportunities/${id}`, { method: saved ? "DELETE" : "POST", headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` } });
+      const body = await res.json();
+      if (!res.ok || !body.success) throw new Error(body.error?.message || "Unable to save opportunity.");
+      setSaved(!saved);
+    } catch (e) { setApplyError(e.message); }
+    finally { setSaving(false); }
+  }
+  useEffect(() => {
+    let live = true;
+    setApplied(false); setSaved(false);
+    const headers = { Authorization: `Bearer ${localStorage.getItem("accessToken")}` };
+    Promise.all([
+      fetch(`${API_URL}/api/v1/applicant/saved-opportunities`, { headers }).then(r => r.json()),
+      fetch(`${API_URL}/api/v1/applicant/applications`, { headers }).then(r => r.json()),
+    ]).then(([bookmarks, applications]) => {
+      if (!live) return;
+      if (bookmarks.success) setSaved(bookmarks.data.some(o => String(o.opportunityId) === id));
+      if (applications.success) setApplied(applications.data.some(a => String(a.opportunityId) === id));
+    }).catch(() => {});
+    return () => { live = false; };
+  }, [id]);
 
   async function handleApply() {
     setApplying(true);
@@ -137,8 +165,8 @@ export default function OpportunityDetail() {
                   {applying ? "Submitting…" : "Apply Now"}
                 </button>
               )}
-              <button className="btn btn-outline btn-block" style={{ marginTop: 10 }}>
-                <Bookmark size={15} /> Save for later
+              <button className="btn btn-outline btn-block" style={{ marginTop: 10 }} onClick={toggleSave} disabled={saving}>
+                <Bookmark size={15} fill={saved ? "currentColor" : "none"} /> {saving ? "Saving..." : saved ? "Saved - remove bookmark" : "Save for later"}
               </button>
             </div>
           </div>

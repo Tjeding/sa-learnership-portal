@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "../../api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Topbar from "../../components/Topbar";
@@ -49,6 +50,19 @@ export default function ShortlistedCandidates() {
 
   const shortlisted = rows.filter((a) => a.status === "shortlisted" || a.status === "offered");
 
+  async function contact(candidate) {
+    setError("");
+    try {
+      const response = await fetch(`${API_URL}/api/v1/messages/conversations`, {
+        method: "POST", headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ recipientId: candidate.applicantId, opportunityId: candidate.opportunityId }),
+      });
+      const body = await response.json();
+      if (!response.ok || !body.success) throw new Error(body.error?.message || "Unable to open conversation.");
+      navigate(`/provider/messages?conversation=${body.data.conversationId}`);
+    } catch (e) { setError(e.message); }
+  }
+
   return (
     <>
       <Topbar
@@ -76,7 +90,7 @@ export default function ShortlistedCandidates() {
               </div>
               <div className="text-sm text-stone" style={{ marginBottom: 12 }}>Applied for {a.opportunityTitle}</div>
               <div style={{ display: "flex", gap: 8 }}>
-                <button className="btn btn-outline btn-sm" style={{ flex: 1 }} disabled title="Messaging isn't built yet"><Mail size={13} /> Message</button>
+                <button className="btn btn-outline btn-sm" style={{ flex: 1 }} onClick={() => contact(a)}><Mail size={13} /> Message</button>
                 <button className="btn btn-outline btn-sm" style={{ flex: 1 }} disabled={!a.applicantCvUrl}
                   onClick={() => window.open(`${API_URL}${a.applicantCvUrl}`, "_blank")}>
                   <FileText size={13} /> View CV

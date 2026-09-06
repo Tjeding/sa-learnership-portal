@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "../../api";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sprout, Quote } from "lucide-react";
@@ -7,11 +8,10 @@ import { useAuth } from "../../context/AuthContext";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export default function Login() {
-  const [role, setRole] = useState("applicant");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { refreshUser } = useAuth();
+  const { signIn } = useAuth();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -19,7 +19,7 @@ export default function Login() {
 
     const form = new FormData(e.target);
     const payload = {
-      email: form.get("email"),
+      email: form.get("email").trim(),
       password: form.get("password"),
     };
 
@@ -37,17 +37,8 @@ export default function Login() {
       }
 
       const { accessToken, refreshToken, user } = body.data;
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      // Sync AuthContext state in the current tab (storage event only
-      // fires in *other* tabs, so we need an explicit refresh here).
-      await refreshUser();
-
-      // Route by the account's actual role from the server, not the
-      // (cosmetic) tab the person happened to have selected.
-      navigate(`/${user.role}`);
+      signIn({ accessToken, refreshToken, user });
+      navigate(`/${user.role}`, { replace: true });
     } catch (err) {
       setError(err.message || "Something went wrong. Please try again.");
     } finally {
@@ -71,21 +62,13 @@ export default function Login() {
           </p>
           <p style={{ marginTop: 16, color: "#a9b2ac", fontSize: 13.5 }}>Lindiwe M. — Software Development Learnership</p>
         </div>
-        <p style={{ color: "#8b948d", fontSize: 12.5 }}>Real accounts are created — this now talks to the live API.</p>
+        <p style={{ color: "#8b948d", fontSize: 12.5 }}>Your next opportunity starts here.</p>
       </div>
 
       <div className="auth-form-col">
         <div className="auth-card">
           <h2 style={{ fontSize: 26, marginBottom: 6 }}>Welcome back</h2>
-          <p className="text-stone text-sm" style={{ marginBottom: 24 }}>Log in to continue to your dashboard.</p>
-
-          <div className="role-select">
-            {["applicant", "provider", "admin"].map((r) => (
-              <div key={r} className={"role-option" + (role === r ? " selected" : "")} onClick={() => setRole(r)}>
-                {r === "applicant" ? "Applicant" : r === "provider" ? "Provider" : "Admin"}
-              </div>
-            ))}
-          </div>
+          <p className="text-stone text-sm" style={{ marginBottom: 24 }}>Use your email and password. We will open the dashboard linked to your account.</p>
 
           {error && (
             <div style={{ background: "#fdecea", color: "#a32424", padding: "10px 14px", borderRadius: 8, fontSize: 13.5, marginBottom: 16 }}>
@@ -96,17 +79,14 @@ export default function Login() {
           <form onSubmit={handleSubmit}>
             <div className="field">
               <label>Email address</label>
-              <input className="input" name="email" type="email" placeholder="you@example.co.za" required />
+              <input className="input" autoComplete="username" aria-label="Email address" name="email" type="email" placeholder="you@example.co.za" required />
             </div>
             <div className="field">
               <label>Password</label>
-              <input className="input" name="password" type="password" placeholder="••••••••" required />
-            </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 20 }}>
-              <a href="#" className="text-sm" style={{ color: "var(--veld)", fontWeight: 600 }}>Forgot password?</a>
+              <input className="input" autoComplete="current-password" aria-label="Password" name="password" type="password" placeholder="••••••••" required />
             </div>
             <button className="btn btn-primary btn-block" type="submit" disabled={submitting}>
-              {submitting ? "Logging in…" : `Log in as ${role}`}
+              {submitting ? "Logging in…" : "Log in"}
             </button>
           </form>
 

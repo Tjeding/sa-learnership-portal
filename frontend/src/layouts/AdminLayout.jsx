@@ -2,7 +2,7 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import {
   LayoutDashboard, Users, Briefcase, ClipboardList, BarChart3,
-  GraduationCap, FileEdit, Settings, History,
+  Bell, MessageSquare, GraduationCap, FileEdit, Settings, History,
 } from "lucide-react";
 
 const sections = [
@@ -29,6 +29,8 @@ const sections = [
   },
   {
     items: [
+      { to: "/admin/messages", label: "Messages", icon: MessageSquare },
+      { to: "/admin/notifications", label: "Notifications", icon: Bell },
       { to: "/admin/settings", label: "System Settings", icon: Settings },
       { to: "/admin/audit", label: "Audit Logs", icon: History },
     ],

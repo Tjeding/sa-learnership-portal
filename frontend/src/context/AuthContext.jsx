@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "../api";
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -13,13 +14,16 @@ function readStoredUser() {
   }
 }
 
-function authHeaders() {
-  const token = localStorage.getItem("accessToken");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
 export function AuthProvider({ children }) {
+  const [loading, setLoading] = useState(!!localStorage.getItem("accessToken"));
   const [user, setUser] = useState(readStoredUser);
+  const signIn = useCallback(({ accessToken, refreshToken, user: account }) => {
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    localStorage.setItem("user", JSON.stringify(account));
+    setUser(account);
+    setProviderOrg(null);
+  }, []);
   const [providerOrg, setProviderOrg] = useState(null);
 
   /* Refresh user from /auth/me when we have a token but no stored user,
@@ -31,6 +35,11 @@ export function AuthProvider({ children }) {
       const res = await fetch(`${API_URL}/api/v1/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (res.status === 401 || res.status === 403) {
+        for (const key of ["accessToken", "refreshToken", "user"]) localStorage.removeItem(key);
+        setUser(null);
+        return;
+      }
       if (!res.ok) return;
       const body = await res.json();
       if (body.success && body.data) {
@@ -74,10 +83,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (!user && localStorage.getItem("accessToken")) {
-      refreshUser();
-    }
-  }, [user, refreshUser]);
+    refreshUser().finally(() => setLoading(false));
+    function expired() { setUser(null); setProviderOrg(null); }
+    window.addEventListener("session-expired", expired);
+    return () => window.removeEventListener("session-expired", expired);
+  }, [refreshUser]);
 
   /* Multi-tab sync: the "storage" event fires in OTHER tabs when
      localStorage changes in THIS tab. If the token was removed (logout
@@ -153,7 +163,7 @@ export function AuthProvider({ children }) {
     : null;
 
   return (
-    <AuthContext.Provider value={{ user, topbarUser, providerOrg, refreshUser, logout }}>
+    <AuthContext.Provider value={{ loading, signIn, user, topbarUser, providerOrg, refreshUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

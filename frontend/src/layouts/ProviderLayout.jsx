@@ -18,7 +18,7 @@ const sections = [
     label: "Inbox",
     items: [
       { to: "/provider/messages", label: "Messages", icon: MessageSquare },
-      { to: "/provider/notifications", label: "Notifications", icon: Bell, count: 3 },
+      { to: "/provider/notifications", label: "Notifications", icon: Bell },
     ],
   },
   {

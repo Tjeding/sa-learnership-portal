@@ -144,6 +144,10 @@ public class AuthService {
         User user = userRepository.findById(stored.getUserId())
                 .orElseThrow(() -> ResourceNotFoundException.of("user", stored.getUserId()));
 
+        if (!user.isActive()) {
+            throw new ForbiddenActionException("This account has been deactivated.");
+        }
+
         // Rotate: revoke the used refresh token and issue a brand new pair.
         stored.setRevokedAt(Instant.now());
         refreshTokenRepository.save(stored);

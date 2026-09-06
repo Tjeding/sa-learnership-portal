@@ -1,4 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { InboxProvider } from "./context/InboxContext";
+import MessagesView from "./components/MessagesView";
+import NotificationsView from "./components/NotificationsView";
+import NotFound from "./components/NotFound";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute, { PublicOnlyRoute } from "./components/ProtectedRoute";
 
@@ -46,7 +50,7 @@ import AuditLogs from "./pages/admin/AuditLogs";
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <InboxProvider><BrowserRouter>
         <Routes>
           {/* Public site */}
           <Route path="/" element={<Landing />} />
@@ -95,6 +99,8 @@ export default function App() {
           <Route element={<ProtectedRoute requiredRole="admin" />}>
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
+              <Route path="messages" element={<MessagesView />} />
+              <Route path="notifications" element={<NotificationsView />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="opportunities" element={<OpportunitiesAdmin />} />
               <Route path="applications" element={<ApplicationsAdmin />} />
@@ -107,9 +113,9 @@ export default function App() {
           </Route>
 
           {/* Fallback */}
-          <Route path="*" element={<Landing />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
-      </BrowserRouter>
+      </BrowserRouter></InboxProvider>
     </AuthProvider>
   );
 }

@@ -1,9 +1,9 @@
+import { apiFetch as fetch } from "../../api";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import { ProgressRing } from "../../components/Widgets";
-import { UploadCloud, FileCheck2, ShieldCheck, Clock3, Plus, X, ImagePlus } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { UploadCloud, FileCheck2, ShieldCheck, Clock3, X, ImagePlus } from "lucide-react";
 
 // Falls back to localhost for local dev; set VITE_API_URL in frontend/.env for other environments.
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -13,17 +13,11 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-// Placeholder — replace once backend exposes applicant qualifications & skills endpoints
-const PLACEHOLDER_QUALIFICATIONS = [
-  { title: "National Senior Certificate (Matric)", institution: "—", year: "—", nqf: 4, verified: true },
-];
-const PLACEHOLDER_SKILLS = [
-  { name: "Communication", level: "—" },
-];
+const PLACEHOLDER_QUALIFICATIONS = [];
+const PLACEHOLDER_SKILLS = [];
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { topbarUser } = useAuth();
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -254,7 +248,7 @@ export default function Profile() {
             <div className="card">
               <div className="card-header">
                 <span className="card-title">Qualifications</span>
-                <button className="btn btn-outline btn-sm"><Plus size={14} /> Add qualification</button>
+                <span className="text-sm text-stone">Qualification editing is not available yet.</span>
               </div>
               {/* Qualifications/skills management is a separate feature; showing sample data for now. */}
               <div className="list-plain">
@@ -280,7 +274,7 @@ export default function Profile() {
             <div className="card">
               <div className="card-header">
                 <span className="card-title">Skills</span>
-                <button className="btn btn-outline btn-sm"><Plus size={14} /> Add skill</button>
+                <span className="text-sm text-stone">Skill editing is not available yet.</span>
               </div>
               <div className="chip-row">
                 {PLACEHOLDER_SKILLS.map((s) => (

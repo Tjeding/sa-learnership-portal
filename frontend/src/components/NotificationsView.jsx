@@ -1,5 +1,7 @@
+import { apiFetch as fetch } from "../api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useInbox } from "../context/InboxContext";
 import Topbar from "./Topbar";
 import { CheckCheck, FileText, Sparkles, Clock3, Info } from "lucide-react";
 
@@ -18,12 +20,14 @@ const iconMap = {
 };
 
 export default function NotificationsView({ topbarProps }) {
+  const { refresh } = useInbox();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   function load() {
+    setError("");
     setLoading(true);
     fetch(`${API_URL}/api/v1/notifications`, { headers: authHeaders() })
       .then((res) => {
@@ -46,6 +50,7 @@ export default function NotificationsView({ topbarProps }) {
       const res = await fetch(`${API_URL}/api/v1/notifications/${id}/read`, { method: "PATCH", headers: authHeaders() });
       const body = await res.json();
       if (!res.ok || !body.success) throw new Error(body?.error?.message || "Failed to mark as read.");
+      refresh();
       setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
     } catch (err) {
       setError(err.message);
@@ -57,6 +62,7 @@ export default function NotificationsView({ topbarProps }) {
       const res = await fetch(`${API_URL}/api/v1/notifications/mark-all-read`, { method: "PATCH", headers: authHeaders() });
       const body = await res.json();
       if (!res.ok || !body.success) throw new Error(body?.error?.message || "Failed to mark all as read.");
+      refresh();
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (err) {
       setError(err.message);
@@ -84,10 +90,10 @@ export default function NotificationsView({ topbarProps }) {
           <div className="list-plain">
             {loading && <p className="text-sm text-stone" style={{ padding: "14px 4px" }}>Loading…</p>}
             {!loading && notifications.map((n) => {
-              const meta = iconMap[n.type];
+              const meta = iconMap[n.type] || iconMap.system;
               const Icon = meta.icon;
               return (
-                <div key={n.id} onClick={() => !n.read && markRead(n.id)} style={{
+                <div key={n.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!n.read) markRead(n.id); } }} onClick={() => !n.read && markRead(n.id)} style={{
                   display: "flex", gap: 14, padding: "14px 4px",
                   borderBottom: "1px solid var(--line-soft)",
                   background: n.read ? "transparent" : "var(--paper)",

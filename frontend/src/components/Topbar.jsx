@@ -1,38 +1,13 @@
-import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useInbox } from "../context/InboxContext";
 import { Bell, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
-
-function authHeaders() {
-  const token = localStorage.getItem("accessToken");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-export default function Topbar({ eyebrow, title, subtitle, user, notifTo = "notifications", msgTo = "messages", actions }) {
-  const [notifCount, setNotifCount] = useState(0);
-  const [msgCount, setMsgCount] = useState(0);
-
-  /* Fetch real unread notification count from the database */
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
-    fetch(`${API_URL}/api/v1/notifications/unread-count`, { headers: authHeaders() })
-      .then((r) => r.json())
-      .then((body) => { if (body.success) setNotifCount(body.data?.unreadCount ?? 0); })
-      .catch(() => {});
-  }, []);
-
-  /* Fetch real unread message count from the database */
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
-    fetch(`${API_URL}/api/v1/messages/unread-count`, { headers: authHeaders() })
-      .then((r) => r.json())
-      .then((body) => { if (body.success) setMsgCount(body.data ?? 0); })
-      .catch(() => {});
-  }, []);
-
+export default function Topbar({ eyebrow, title, subtitle, user, actions }) {
+  const { user: account, topbarUser } = useAuth();
+  const { notifications: notifCount, messages: msgCount } = useInbox();
+  const base = `/${account?.role || "applicant"}`;
+  user = topbarUser || user || { name: "User", initials: "?", color: "var(--veld)" };
   return (
     <header className="topbar">
       <div className="topbar-greeting">
@@ -42,11 +17,11 @@ export default function Topbar({ eyebrow, title, subtitle, user, notifTo = "noti
       </div>
       <div className="topbar-actions">
         {actions}
-        <Link to={msgTo} className="icon-btn" aria-label="Messages">
+        <Link to={`${base}/messages`} className="icon-btn" aria-label="Messages">
           <MessageSquare size={17} strokeWidth={2} />
           {msgCount > 0 && <span className="dot">{msgCount}</span>}
         </Link>
-        <Link to={notifTo} className="icon-btn" aria-label="Notifications">
+        <Link to={`${base}/notifications`} className="icon-btn" aria-label="Notifications">
           <Bell size={17} strokeWidth={2} />
           {notifCount > 0 && <span className="dot">{notifCount}</span>}
         </Link>
