@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Sprout, LogOut } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+
+import { useInbox } from "../context/InboxContext";
 
 const roleMeta = {
   applicant: { color: "var(--role-applicant)", label: "Applicant Portal" },
@@ -9,6 +12,9 @@ const roleMeta = {
 };
 
 export default function Sidebar({ role, sections }) {
+  const [open, setOpen] = useState(false);
+  const counts = useInbox();
+  sections = sections.map(section => ({ ...section, items: section.items.map(item => ({ ...item, count: item.to.endsWith("/notifications") ? counts.notifications : item.to.endsWith("/messages") ? counts.messages : item.count })) }));
   const meta = roleMeta[role];
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -20,7 +26,9 @@ export default function Sidebar({ role, sections }) {
   }
 
   return (
-    <aside className="sidebar" style={{ "--role-color": meta.color }}>
+    <>
+    <button className="mobile-nav-toggle btn btn-outline" aria-expanded={open} aria-controls="portal-navigation" onClick={() => setOpen(!open)}>{open ? "Close navigation" : "Menu"}</button>
+    <aside id="portal-navigation" className={`sidebar${open ? " mobile-open" : ""}`} style={{ "--role-color": meta.color }}>
       <div className="sidebar-brand">
         <div className="sidebar-brand-mark">
           <Sprout size={20} strokeWidth={2.4} />
@@ -37,6 +45,7 @@ export default function Sidebar({ role, sections }) {
             {section.label && <div className="sidebar-section-label">{section.label}</div>}
             {section.items.map((item) => (
               <NavLink
+                onClick={() => setOpen(false)}
                 key={item.to}
                 to={item.to}
                 end={item.end}
@@ -58,5 +67,6 @@ export default function Sidebar({ role, sections }) {
         </button>
       </div>
     </aside>
+    </>
   );
 }

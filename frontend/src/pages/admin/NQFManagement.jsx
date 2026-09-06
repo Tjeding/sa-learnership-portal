@@ -1,6 +1,7 @@
+import { apiFetch as fetch } from "../../api";
 import { useEffect, useState } from "react";
 import Topbar from "../../components/Topbar";
-import { Plus, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -10,6 +11,7 @@ export default function NQFManagement() {
   const [tab, setTab] = useState("levels");
   const [nqfLevels, setNqfLevels] = useState([]);
   const [qualifications, setQualifications] = useState([]);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,13 +21,8 @@ export default function NQFManagement() {
     ]).then(([levels, quals]) => {
       if (levels.success) setNqfLevels(levels.data);
       if (quals.success) setQualifications(quals.data);
-    }).finally(() => setLoading(false));
+    }).catch(() => setError("Unable to load reference data. Please reload this page.")).finally(() => setLoading(false));
   }, []);
-
-  const suggestions = [
-    { id: 1, title: "Renewable Energy Technician Learnership", nqf: 4, submittedBy: "PowerGrid Training Centre", url: "https://allqs.saqa.org.za/search.php" },
-    { id: 2, title: "Occupational Certificate: Marine Diesel Mechanic", nqf: 4, submittedBy: "Ocean Skills Academy", url: "https://allqs.saqa.org.za/search.php" },
-  ];
 
   return (
     <>
@@ -34,6 +31,7 @@ export default function NQFManagement() {
         user={topbarUser || { name: "Admin", role: "Administrator", initials: "?", color: "var(--role-admin)" }}
       />
       <div className="page">
+        {error && <div className="feedback-error" role="alert">{error}</div>}
         <div className="card" style={{ marginBottom: 20, background: "#eeeaf6", border: "none", display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
           <p className="text-sm" style={{ color: "var(--ink-soft)" }}>
             Source: SAQA — National Qualifications Framework level descriptors and the NLRD registered qualifications search.
@@ -42,7 +40,7 @@ export default function NQFManagement() {
         </div>
 
         <div className="tabs">
-          {[["levels", "NQF Levels"], ["types", "Qualification Types"], ["suggestions", "Admin Suggestions"]].map(([k, l]) => (
+          {[["levels", "NQF Levels"], ["types", "Qualification Types"]].map(([k, l]) => (
             <div key={k} className={"tab" + (tab === k ? " active" : "")} style={{ cursor: "pointer" }} onClick={() => setTab(k)}>{l}</div>
           ))}
         </div>
@@ -69,7 +67,7 @@ export default function NQFManagement() {
           <div className="card">
             <div className="card-header">
               <span className="card-title">Registered qualification types</span>
-              <button className="btn btn-outline btn-sm"><Plus size={14} /> Add type</button>
+
             </div>
             {loading ? <p className="text-sm text-stone">Loading…</p> : (
               <div className="table-wrap">
@@ -92,25 +90,6 @@ export default function NQFManagement() {
           </div>
         )}
 
-        {tab === "suggestions" && (
-          <div className="card">
-            <div className="card-header"><span className="card-title">Pending qualification suggestions</span></div>
-            <div className="list-plain">
-              {suggestions.map((s) => (
-                <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid var(--line-soft)" }}>
-                  <div>
-                    <div className="cell-primary">{s.title}</div>
-                    <div className="cell-sub">Suggested by {s.submittedBy} · NQF Level {s.nqf}</div>
-                  </div>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <button className="icon-btn" style={{ width: 30, height: 30 }}><CheckCircle2 size={13} color="var(--veld)" /></button>
-                    <button className="icon-btn" style={{ width: 30, height: 30 }}><XCircle size={13} color="var(--rust)" /></button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </>
   );

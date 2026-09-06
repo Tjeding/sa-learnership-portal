@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "../../api";
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Sprout, CheckCircle2 } from "lucide-react";
@@ -12,7 +13,7 @@ export default function Register() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { refreshUser } = useAuth();
+  const { signIn } = useAuth();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -61,12 +62,7 @@ export default function Register() {
 
       const { accessToken, refreshToken, user } = body.data;
 
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      // Sync AuthContext state in the current tab
-      await refreshUser();
+      signIn({ accessToken, refreshToken, user });
 
       navigate(`/${user.role}`);
     } catch (err) {

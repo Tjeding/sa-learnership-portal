@@ -1,6 +1,7 @@
 package com.tjeding.portal.message;
 
 import com.tjeding.portal.common.exception.ForbiddenActionException;
+import com.tjeding.portal.common.exception.BadRequestException;
 import com.tjeding.portal.common.exception.ResourceNotFoundException;
 import com.tjeding.portal.message.dto.ConversationSummaryResponse;
 import com.tjeding.portal.message.dto.CreateConversationRequest;
@@ -41,6 +42,24 @@ public class MessageService {
 
     // ─── Helpers ─────────────────────────────────────────────────────
 
+    @Transactional(readOnly = true)
+    public List<java.util.Map<String, Object>> getContacts(String email) {
+        User user = currentUser(email);
+        return jdbcTemplate.queryForList("""
+                SELECT u.id, COALESCE(pp.organization_name, ap.first_name || ' ' || ap.last_name, 'Support') AS name
+                FROM users u
+                LEFT JOIN provider_profiles pp ON pp.user_id = u.id
+                LEFT JOIN applicant_profiles ap ON ap.user_id = u.id
+                WHERE u.is_active = TRUE AND u.id <> ? AND (
+                    CAST(u.role AS VARCHAR) = 'admin' OR ? = 'admin'
+                    OR (? = 'applicant' AND CAST(u.role AS VARCHAR) = 'provider')
+                    OR (? = 'provider' AND EXISTS (
+                        SELECT 1 FROM applications a JOIN opportunities o ON o.id = a.opportunity_id
+                        WHERE a.applicant_id = u.id AND o.provider_id = ?)))
+                ORDER BY name, u.id
+                """, user.getId(), user.getRole().name(), user.getRole().name(), user.getRole().name(), user.getId());
+    }
+
     private User currentUser(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -78,8 +97,8 @@ public class MessageService {
                     c.opportunity_id,
                     o.title                                                     AS opportunity_title,
                     CASE WHEN c.applicant_id = ?
-                         THEN COALESCE(pp.organization_name, 'Provider')
-                         ELSE COALESCE(ap.first_name || ' ' || ap.last_name, 'Applicant')
+                         THEN COALESCE(pp.organization_name, 'Support')
+                         ELSE COALESCE(ap.first_name || ' ' || ap.last_name, 'Support')
                     END                                                         AS recipient_name,
                     CASE WHEN c.applicant_id = ?
                          THEN UPPER(SUBSTRING(COALESCE(pp.organization_name, 'P') FROM 1 FOR 1) ||
@@ -120,7 +139,7 @@ public class MessageService {
                         rs.getObject("opportunity_id") != null ? rs.getLong("opportunity_id") : null,
                         rs.getString("opportunity_title"),
                         rs.getString("last_message_preview"),
-                        rs.getObject("last_message_at", Instant.class),
+                        rs.getTimestamp("last_message_at") == null ? null : rs.getTimestamp("last_message_at").toInstant(),
                         rs.getLong("unread_count")
                 ),
                 userId, userId, userId, userId, userId);
@@ -156,12 +175,13 @@ public class MessageService {
         Message message = Message.builder()
                 .conversation(conversation)
                 .sender(user)
-                .body(request.body())
-                .read(true)   // sender's own message is implicitly read
+                .body(request.body().trim())
+                .read(false)  // Read state belongs to the recipient.
                 .build();
         messageRepository.save(message);
 
         // Bump conversation.updated_at so the thread list sorts correctly
+        conversation.setUpdatedAt(Instant.now());
         conversationRepository.save(conversation);
 
         return toMessageResponse(message, user.getId());
@@ -173,16 +193,26 @@ public class MessageService {
     public ConversationSummaryResponse createOrFindConversation(String email, CreateConversationRequest request) {
         User user = currentUser(email);
 
-        // Determine who is the applicant and who is the provider
-        Long applicantId;
-        Long providerId;
-
-        if (user.getRole() == UserRole.applicant) {
-            applicantId = user.getId();
-            providerId = request.recipientId();
-        } else {
-            applicantId = request.recipientId();
-            providerId = user.getId();
+        User recipient = userRepository.findById(request.recipientId())
+                .orElseThrow(() -> ResourceNotFoundException.of("User", request.recipientId()));
+        if (!recipient.isActive() || user.getId().equals(recipient.getId())) {
+            throw new BadRequestException("Choose another active account to message.");
+        }
+        if (user.getRole() == recipient.getRole() && user.getRole() != UserRole.admin) {
+            throw new ForbiddenActionException("Conversations must be between applicants, providers or support.");
+        }
+        // Keep a stable ordering for support conversations as well as applicant/provider pairs.
+        boolean userFirst = user.getRole() == UserRole.applicant
+                || (user.getRole() == UserRole.admin && recipient.getRole() == UserRole.provider)
+                || (user.getRole() == UserRole.admin && recipient.getRole() == UserRole.admin && user.getId() < recipient.getId());
+        Long applicantId = userFirst ? user.getId() : recipient.getId();
+        Long providerId = userFirst ? recipient.getId() : user.getId();
+        if (request.opportunityId() != null) {
+            Opportunity opportunity = opportunityRepository.findById(request.opportunityId())
+                    .orElseThrow(() -> ResourceNotFoundException.of("Opportunity", request.opportunityId()));
+            if (!opportunity.getProvider().getUserId().equals(providerId)) {
+                throw new ForbiddenActionException("The provider does not own this opportunity.");
+            }
         }
 
         // Check if conversation already exists
@@ -213,7 +243,7 @@ public class MessageService {
         });
 
         // Return a minimal summary — the frontend will refresh the full list
-        Long recipientId = user.getRole() == UserRole.applicant ? providerId : applicantId;
+        Long recipientId = recipient.getId();
         return new ConversationSummaryResponse(
                 conversation.getId(),
                 recipientId,
@@ -230,7 +260,7 @@ public class MessageService {
     // ─── DTO mapping ─────────────────────────────────────────────────
 
     private MessageResponse toMessageResponse(Message m, Long currentUserId) {
-        String senderName = "User";
+        String senderName = "Support";
         // Try to resolve sender display name from applicant or provider profile
         var senderOpt = userRepository.findById(m.getSender().getId());
         if (senderOpt.isPresent()) {

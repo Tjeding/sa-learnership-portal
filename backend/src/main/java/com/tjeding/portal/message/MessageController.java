@@ -27,6 +27,11 @@ public class MessageController {
 
     // ─── Conversations ───────────────────────────────────────────────
 
+    @GetMapping("/contacts")
+    public ApiResponse<java.util.List<java.util.Map<String, Object>>> contacts(Authentication authentication) {
+        return ApiResponse.success(messageService.getContacts(authentication.getName()));
+    }
+
     @GetMapping("/unread-count")
     public ApiResponse<Long> getUnreadCount(Authentication authentication) {
         return ApiResponse.success(messageService.getTotalUnreadCount(authentication.getName()));
@@ -40,7 +45,7 @@ public class MessageController {
     @PostMapping("/conversations")
     public ApiResponse<ConversationSummaryResponse> createConversation(
             Authentication authentication,
-            @RequestBody CreateConversationRequest request) {
+            @Valid @RequestBody CreateConversationRequest request) {
         return ApiResponse.success(messageService.createOrFindConversation(authentication.getName(), request));
     }
 
